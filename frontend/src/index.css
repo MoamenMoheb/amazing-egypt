@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Fredoka', sans-serif;
+
+  --color-brand-primary: #FFD700;
+  --color-brand-secondary: #00A8E8;
+  --color-brand-accent: #FF6B6B;
+  --color-brand-dark: #2D3436;
+  --color-brand-light: #F9F9F9;
+
+  --animate-bounce-slow: bounce 3s infinite;
+  --animate-float: float 6s ease-in-out infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+}
+
+/* Custom Utilities can go here */

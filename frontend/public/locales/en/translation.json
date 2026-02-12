@@ -1,0 +1,20 @@
+{
+  "title": "Amazing Egypt",
+  "welcome": "Welcome to Amazing Egypt!",
+  "explore": "Explore the Land of Pharaohs!",
+  "startAdventure": "Start Adventure",
+  "ready": "Get ready for a fun journey!",
+  "sites": {
+    "cairo": { "title": "Cairo", "description": "The capital of Egypt, home to the Giza Pyramids and the Sphinx. A bustling city where history meets modernity.", "fact": "Cairo is home to the only remaining Wonder of the Ancient World!" },
+    "alex": { "title": "Alexandria", "description": "The Pearl of the Mediterranean. Famous for its library and ancient lighthouse.", "fact": "Alexander the Great founded this city!" },
+    "luxor": { "title": "Luxor", "description": "The world's greatest open-air museum. Explore the Valley of the Kings and Karnak Temple.", "fact": "Luxor contains about a third of the world's most valuable monuments!" },
+    "aswan": { "title": "Aswan", "description": "A beautiful city on the Nile. Visit the High Dam and Philae Temple.", "fact": "The ancient Egyptians gathered stones for their obelisks here!" },
+    "hurghada": { "title": "Hurghada", "description": "A paradise for snorkeling and diving in the Red Sea.", "fact": "The Red Sea is one of the saltiest bodies of water in the world!" }
+  },
+  "back": "Back to Sites",
+  "nav": {
+    "home": "Home",
+    "map": "Map",
+    "sites": "Sites"
+  }
+}
