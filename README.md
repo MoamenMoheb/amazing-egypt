@@ -2,6 +2,9 @@
 
 A dynamic, interactive website designed for Gen Alpha to explore touristic sites in Egypt. 
 
+## 🌐 Live Demo
+**[https://amazing-egypt-final-v1.surge.sh](https://amazing-egypt-final-v1.surge.sh)**
+
 ## 🚀 Quick Start
 
 ### 1. Frontend (Interactive App)

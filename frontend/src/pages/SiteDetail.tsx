@@ -1,19 +1,17 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Volume2 } from 'lucide-react';
-
-const sitesData: Record<string, { id: string; image: string; color: string }> = {
-    cairo: { id: 'cairo', image: 'https://images.unsplash.com/photo-1572252009289-9d53c6d99a89?auto=format&fit=crop&w=800', color: '#FFD700' },
-    alex: { id: 'alex', image: 'https://images.unsplash.com/photo-1590240924765-4f400787e91d?auto=format&fit=crop&w=800', color: '#00A8E8' },
-    luxor: { id: 'luxor', image: 'https://images.unsplash.com/photo-1566192257211-13768be4d8C0?auto=format&fit=crop&w=800', color: '#FF6B6B' },
-    aswan: { id: 'aswan', image: 'https://images.unsplash.com/photo-1533513063857-798418a09f87?auto=format&fit=crop&w=800', color: '#E67E22' },
-    hurghada: { id: 'hurghada', image: 'https://images.unsplash.com/photo-1563212891-b0e78c859c25?auto=format&fit=crop&w=800', color: '#1ABC9C' },
-};
+import { ArrowLeft, Volume2, Gamepad2 } from 'lucide-react';
+import TicTacToe from '../components/games/TicTacToe';
+import Minesweeper from '../components/games/Minesweeper';
+import GameModal from '../components/games/GameModal';
+import { sitesData } from '../data/sites';
 
 const SiteDetail = () => {
     const { id } = useParams<{ id: string }>();
     const { t } = useTranslation();
-    const site = id ? sitesData[id] : null;
+    const site = sitesData.find(s => s.id === id);
+    const [isGameOpen, setIsGameOpen] = useState(false);
 
     if (!site) {
         return <div className="p-20 text-center">Site not found!</div>;
@@ -53,13 +51,25 @@ const SiteDetail = () => {
                                     Popular
                                 </span>
                             </div>
-                            <button
-                                onClick={handleSpeak}
-                                className="bg-brand-accent text-white p-3 rounded-full hover:bg-red-500 shadow-md transition-transform hover:scale-110"
-                                title="Listen"
-                            >
-                                <Volume2 size={24} />
-                            </button>
+                            <div className="flex gap-2">
+                                {site.game && (
+                                    <button
+                                        onClick={() => setIsGameOpen(true)}
+                                        className="bg-brand-secondary text-white p-3 rounded-full hover:bg-brand-primary shadow-md transition-transform hover:scale-110 flex items-center gap-2 px-4"
+                                        title="Play Game"
+                                    >
+                                        <Gamepad2 size={24} />
+                                        <span className="font-bold hidden md:inline">Play {site.game === 'tictactoe' ? 'Tic-Tac-Toe' : 'Minesweeper'}</span>
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleSpeak}
+                                    className="bg-brand-accent text-white p-3 rounded-full hover:bg-red-500 shadow-md transition-transform hover:scale-110"
+                                    title="Listen"
+                                >
+                                    <Volume2 size={24} />
+                                </button>
+                            </div>
                         </div>
 
                         <p className="text-xl md:text-2xl leading-relaxed text-gray-700 font-medium">
@@ -73,12 +83,28 @@ const SiteDetail = () => {
                             </div>
                             <div className="bg-brand-light p-6 rounded-2xl border-2 border-brand-secondary">
                                 <h3 className="text-xl font-bold text-brand-dark mb-2">Activity 🎮</h3>
-                                <p className="text-gray-600">Try to find the hidden symbol in the main temple!</p>
+                                <p className="text-gray-600">
+                                    {site.game
+                                        ? `Test your skills with a game of ${site.game === 'tictactoe' ? 'Tic-Tac-Toe' : 'Minesweeper'}!`
+                                        : 'Exploration mode active! Look around for hidden treasures.'}
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <GameModal
+                isOpen={isGameOpen}
+                onClose={() => setIsGameOpen(false)}
+                title={site.game === 'tictactoe' ? 'Tic-Tac-Toe' : 'Minesweeper'}
+            >
+                {site.game === 'tictactoe' ? (
+                    <TicTacToe />
+                ) : (
+                    <Minesweeper />
+                )}
+            </GameModal>
         </div>
     );
 };
