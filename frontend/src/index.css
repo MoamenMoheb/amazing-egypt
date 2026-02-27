@@ -3,26 +3,83 @@
 @theme {
   --font-sans: 'Fredoka', sans-serif;
 
-  --color-brand-primary: #FFD700;
-  --color-brand-secondary: #00A8E8;
-  --color-brand-accent: #FF6B6B;
+  --color-brand-primary: #F59E0B;
+  --color-brand-secondary: #1A5276;
+  --color-brand-accent: #E74C3C;
   --color-brand-dark: #2D3436;
-  --color-brand-light: #F9F9F9;
+  --color-brand-light: #FFF8F0;
+  --color-brand-gold: #FFD700;
 
   --animate-bounce-slow: bounce 3s infinite;
   --animate-float: float 6s ease-in-out infinite;
+  --animate-sparkle: sparkle 2s ease-in-out infinite;
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
 
   @keyframes float {
-
-    0%,
-    100% {
+    0%, 100% {
       transform: translateY(0);
     }
-
     50% {
       transform: translateY(-20px);
     }
   }
+
+  @keyframes sparkle {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  @keyframes wiggle {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-5deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+  }
 }
 
-/* Custom Utilities can go here */
+/* Global styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: linear-gradient(180deg, #FFF8F0 0%, #FFF3E0 100%);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FFF8F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #F59E0B;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D97706;
+}
+
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
