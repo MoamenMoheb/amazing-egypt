@@ -40,11 +40,11 @@ const MuseumMap = () => {
             <div className="flex flex-col lg:flex-row gap-6">
 
                 {/* ====== LEFT: INTERACTIVE IMAGE MAP ====== */}
-                <div className="relative flex-1 lg:max-w-[65%] w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-amber-600/30 bg-amber-50">
+                <div className="relative flex-1 lg:max-w-[65%] w-full rounded-3xl p-4 flex items-center justify-center bg-white/50 backdrop-blur-sm border-2 border-white shadow-[0_0_40px_rgba(251,191,36,0.15)]">
                     <img
-                        src="/images/user_museum_map.jpeg"
+                        src="/images/user_museum_map.png"
                         alt="Egyptian Museum Map"
-                        className="w-full h-auto object-cover block"
+                        className="w-full h-auto object-contain block drop-shadow-2xl"
                     />
 
                     {/* OVERLAYS FOR THE ARTIFACTS */}
