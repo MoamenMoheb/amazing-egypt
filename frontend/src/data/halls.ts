@@ -7,7 +7,7 @@ export interface Hall {
   color: string;
   gradient: string;
   icon: string;
-  image?: string; // High-quality 3D image logo
+  image?: string;
   x: number;
   y: number;
   width: number;
