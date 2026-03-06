@@ -3,11 +3,11 @@
 @theme {
   --font-sans: 'Fredoka', sans-serif;
 
-  --color-brand-primary: #F59E0B;
-  --color-brand-secondary: #1A5276;
+  --color-brand-primary: #FFD700;
+  --color-brand-secondary: #0A192F;
   --color-brand-accent: #E74C3C;
-  --color-brand-dark: #2D3436;
-  --color-brand-light: #FFF8F0;
+  --color-brand-dark: #020C1B;
+  --color-brand-light: #F8F9FA;
   --color-brand-gold: #FFD700;
 
   --animate-bounce-slow: bounce 3s infinite;
@@ -54,7 +54,8 @@ html {
 }
 
 body {
-  background: linear-gradient(180deg, #FFF8F0 0%, #FFF3E0 100%);
+  background: var(--color-brand-dark);
+  color: var(--color-brand-light);
   min-height: 100vh;
 }
 
@@ -64,11 +65,11 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #FFF8F0;
+  background: var(--color-brand-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #F59E0B;
+  background: var(--color-brand-gold);
   border-radius: 10px;
 }
 
