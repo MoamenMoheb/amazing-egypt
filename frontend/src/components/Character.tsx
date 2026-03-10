@@ -3,16 +3,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 /* ======== SPRITE PATHS ======== */
 const S = {
-    normal: '/character/amun-normal.png',
-    blink: '/character/amun-blink.png',
-    eyesHalf: '/character/amun-eyes-half.png',
-    talkMid: '/character/amun-talk-mid.png',
-    talkWide: '/character/amun-talking.png',
-    waveDown: '/character/amun-wave-down.png',
-    point: '/character/amun-point.png',
-    jumpStart: '/character/amun-jump-start.png',
-    jumpTop: '/character/amun-excited.png',
-    thinking: '/character/amun-thinking.png',
+    normal: '/character-cyber/normal.png',
+    blink: '/character-cyber/blink.png',
+    eyesHalf: '/character-cyber/eyes-half.png',
+    talkMid: '/character-cyber/talk-mid.png',
+    talkWide: '/character-cyber/talking.png',
+    waveDown: '/character-cyber/wave-down.png',
+    waveUp: '/character-cyber/wave-middle.png',
+    point: '/character-cyber/wave-middle.png',
+    jumpStart: '/character-cyber/talk-mid.png',
+    jumpTop: '/character-cyber/excited.png',
+    thinking: '/character-cyber/eyes-half.png',
 };
 
 /* ======== ANIMATION SEQUENCES (play once, then hold last frame) ======== */
@@ -26,12 +27,12 @@ const SEQUENCES = {
     ],
 
     waving: [
-        { src: S.normal, dur: 350 },
+        { src: S.normal, dur: 200 },
+        { src: S.waveUp, dur: 350 },
         { src: S.waveDown, dur: 350 },
-        { src: S.normal, dur: 350 },
+        { src: S.waveUp, dur: 350 },
         { src: S.waveDown, dur: 350 },
-        { src: S.normal, dur: 350 },
-        { src: S.waveDown, dur: 300 },
+        { src: S.waveUp, dur: 300 },
         { src: S.normal, dur: 0 }, // final frame
     ],
 
