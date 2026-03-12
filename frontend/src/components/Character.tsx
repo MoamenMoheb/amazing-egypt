@@ -1,16 +1,80 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 
-import { useMascot } from '../context/MascotContext';
+/* ======== SPRITE PATHS ======== */
+const S = {
+    normal: '/character-cyber/normal.png',
+    blink: '/character-cyber/blink.png',
+    eyesHalf: '/character-cyber/eyes-half.png',
+    talkMid: '/character-cyber/talk-mid.png',
+    talkWide: '/character-cyber/talking.png',
+    waveDown: '/character-cyber/wave-down.png',
+    waveUp: '/character-cyber/wave-middle.png',
+    point: '/character-cyber/wave-middle.png',
+    jumpStart: '/character-cyber/talk-mid.png',
+    jumpTop: '/character-cyber/excited.png',
+    thinking: '/character-cyber/eyes-half.png',
+};
 
-const REACTION_IMAGES: Record<string, string> = {
-    idle: '/character/New-Mascot1.png',
-    welcome: '/character/New-Mascot3.png',
-    pointing: '/character/New-Mascot5.png',
-    celebration: '/character/New-Mascot7.png', // Or New-Mascot8
-    confused: '/character/New-Mascot9.png',
-    thinking: '/character/New-Mascot11.png',
-    idea: '/character/New-Mascot8.png',
+/* ======== ANIMATION SEQUENCES (play once, then hold last frame) ======== */
+const SEQUENCES = {
+    idle: [
+        { src: S.normal, dur: 800 },
+        { src: S.eyesHalf, dur: 60 },
+        { src: S.blink, dur: 100 },
+        { src: S.eyesHalf, dur: 60 },
+        { src: S.normal, dur: 0 }, // final frame
+    ],
+
+    waving: [
+        { src: S.normal, dur: 200 },
+        { src: S.waveUp, dur: 350 },
+        { src: S.waveDown, dur: 350 },
+        { src: S.waveUp, dur: 350 },
+        { src: S.waveDown, dur: 350 },
+        { src: S.waveUp, dur: 300 },
+        { src: S.normal, dur: 0 }, // final frame
+    ],
+
+    talking: [
+        { src: S.normal, dur: 100 },
+        { src: S.talkMid, dur: 90 },
+        { src: S.talkWide, dur: 120 },
+        { src: S.talkMid, dur: 90 },
+        { src: S.normal, dur: 70 },
+        { src: S.talkMid, dur: 90 },
+        { src: S.talkWide, dur: 110 },
+        { src: S.talkMid, dur: 80 },
+        { src: S.point, dur: 180 },
+        { src: S.talkMid, dur: 90 },
+        { src: S.talkWide, dur: 120 },
+        { src: S.talkMid, dur: 80 },
+        { src: S.normal, dur: 0 }, // final frame
+    ],
+
+    excited: [
+        { src: S.normal, dur: 180 },
+        { src: S.jumpStart, dur: 180 },
+        { src: S.jumpTop, dur: 450 },
+        { src: S.jumpStart, dur: 140 },
+        { src: S.normal, dur: 180 },
+        { src: S.jumpStart, dur: 180 },
+        { src: S.jumpTop, dur: 500 },
+        { src: S.jumpStart, dur: 140 },
+        { src: S.normal, dur: 200 },
+        { src: S.eyesHalf, dur: 60 },
+        { src: S.blink, dur: 100 },
+        { src: S.eyesHalf, dur: 60 },
+        { src: S.jumpTop, dur: 0 }, // final frame: stay excited
+    ],
+
+    thinking: [
+        { src: S.normal, dur: 400 },
+        { src: S.eyesHalf, dur: 70 },
+        { src: S.blink, dur: 100 },
+        { src: S.eyesHalf, dur: 70 },
+        { src: S.thinking, dur: 0 }, // final frame: stay thinking
+    ],
 };
 
 interface CharacterProps {

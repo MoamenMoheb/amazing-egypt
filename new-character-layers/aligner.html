@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mascot Layer Aligner & Resizer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h1 { margin: 0; color: #1a73e8; }
+        p { margin: 5px 0 0 0; color: #555; }
+        
+        .workspace {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* The canvas container where you drag things */
+        .canvas-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                              linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                              linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border: 2px solid #555;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .layer {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transform-origin: top left;
+        }
+        .layer:hover {
+            outline: 2px dashed rgba(255, 0, 0, 0.5);
+        }
+        .layer.body-layer {
+            z-index: 10;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .layer-control {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .layer-control-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .layer-control label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .slider-container input[type="range"] {
+            flex-grow: 1;
+        }
+
+        button.export-btn {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button.export-btn:hover {
+            background-color: #1557b0;
+        }
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Mascot Layer Aligner & Resizer</h1>
+        <p>1. Drag the eyes and mouths to fit perfectly onto the face.</p>
+        <p>2. Use the sliders to <strong>shrink or enlarge</strong> any part that doesn't fit.</p>
+        <p>3. When it looks perfect, click "Export Fixed Images"!</p>
+    </div>
+
+    <div class="workspace">
+        <div class="canvas-container" id="container">
+            <!-- Layers will be injected here -->
+        </div>
+
+        <div class="controls">
+            <h3>Layer Controls</h3>
+            <div id="controls-list">
+                <!-- Controls injected here -->
+            </div>
+            <button class="export-btn" onclick="exportImages()">Export Fixed Images</button>
+        </div>
+    </div>
+
+    <script>
+        const files = [
+            'body-based.png',
+            'open-eye.png',
+            'half-closed-eye.png',
+            'eyebrow.png',
+            'open-mouth.png',
+            'closed-moth.png',
+            'widly-open-mouth.png'
+        ];
+
+        const container = document.getElementById('container');
+        const controlsList = document.getElementById('controls-list');
+        const layers = {}; 
+        const scales = {}; // Store scale for each layer
+
+        let draggedLayer = null;
+        let startX = 0, startY = 0, initialLeft = 0, initialTop = 0;
+
+        files.forEach((file, index) => {
+            scales[file] = 1.0; // Default size (100%)
+
+            // 1. Create Image Element
+            const img = document.createElement('img');
+            img.src = file;
+            img.className = 'layer ' + (file.includes('body') ? 'body-layer' : '');
+            img.id = 'img-' + index;
+            img.style.zIndex = file.includes('body') ? 10 : (20 + index);
+            
+            // Start offset slightly for visibility
+            img.style.left = file.includes('body') ? '50px' : '100px';
+            img.style.top = file.includes('body') ? '50px' : '100px';
+
+            img.ondragstart = () => false; 
+            img.addEventListener('mousedown', dragStart);
+            container.appendChild(img);
+            layers[file] = img;
+
+            // 2. Create Control Panel for this layer
+            const ctrl = document.createElement('div');
+            ctrl.className = 'layer-control';
+            
+            const friendlyName = file.replace('.png', '').replace(/-/g, ' ').toUpperCase();
+            
+            ctrl.innerHTML = `
+                <div class="layer-control-top">
+                    <label>
+                        <input type="checkbox" checked onchange="toggleLayer('${file}', this.checked)">
+                        ${friendlyName}
+                    </label>
+                </div>
+                <div class="slider-container">
+                    <span>Size:</span>
+                    <input type="range" min="0.1" max="3" step="0.05" value="1" 
+                           oninput="resizeLayer('${file}', this.value)">
+                    <span id="label-${index}">100%</span>
+                </div>
+            `;
+            controlsList.appendChild(ctrl);
+        });
+
+        // Mouse Drag Logic
+        function dragStart(e) {
+            draggedLayer = e.target;
+            startX = e.clientX;
+            startY = e.clientY;
+            initialLeft = parseInt(draggedLayer.style.left || 0);
+            initialTop = parseInt(draggedLayer.style.top || 0);
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+        }
+
+        function drag(e) {
+            if (!draggedLayer) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            draggedLayer.style.left = (initialLeft + dx) + 'px';
+            draggedLayer.style.top = (initialTop + dy) + 'px';
+        }
+
+        function dragEnd() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', dragEnd);
+            draggedLayer = null;
+        }
+
+        // Toggle Visibility
+        function toggleLayer(filename, isVisible) {
+            if(isVisible) {
+                layers[filename].classList.remove('hidden');
+            } else {
+                layers[filename].classList.add('hidden');
+            }
+        }
+
+        // Resize visually in the HTML
+        function resizeLayer(filename, value) {
+            const scale = parseFloat(value);
+            scales[filename] = scale;
+            layers[filename].style.transform = `scale(${scale})`;
+            
+            // Update the percentage text label
+            const index = files.indexOf(filename);
+            document.getElementById(`label-${index}`).innerText = Math.round(scale * 100) + '%';
+        }
+
+        // Apply scale & position math precisely onto the final 800x800 canvas export
+        function exportImages() {
+            let processedCount = 0;
+            
+            files.forEach((file, index) => {
+                const imgNode = layers[file];
+                
+                const cvs = document.createElement('canvas');
+                // Export canvas is 800x800 for high quality
+                cvs.width = 800;
+                cvs.height = 800;
+                const ctx = cvs.getContext('2d');
+                
+                const left = parseInt(imgNode.style.left || 0);
+                const top = parseInt(imgNode.style.top || 0);
+                const scale = scales[file];
+
+                const finalWidth = imgNode.naturalWidth * scale;
+                const finalHeight = imgNode.naturalHeight * scale;
+
+                // We add an offset (e.g., 100) to keep things centered on the large export canvas
+                ctx.drawImage(imgNode, left + 100, top + 100, finalWidth, finalHeight);
+
+                // Convert to file
+                const dataURL = cvs.toDataURL('image/png');
+                
+                // Trigger Download
+                const link = document.createElement('a');
+                link.download = 'fixed_' + file;
+                link.href = dataURL;
+                
+                // Small delay to allow browser to process multiple downloads
+                setTimeout(() => {
+                    link.click();
+                    processedCount++;
+                    if (processedCount === files.length) {
+                        alert('Your completely fixed and resized images have been downloaded! You can now drop those "fixed_" files right into your React folder.');
+                    }
+                }, index * 200);
+            });
+        }
+    </script>
+</body>
+</html>
