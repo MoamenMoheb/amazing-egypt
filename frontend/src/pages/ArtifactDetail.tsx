@@ -52,12 +52,12 @@ const ArtifactDetail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 pt-24 pb-10 px-4">
+        <div className="min-h-screen bg-[#020C1B] selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Back button */}
                 <Link
                     to={`/hall/${hall.id}`}
-                    className="flex items-center gap-2 text-amber-700 font-bold mb-6 hover:underline"
+                    className="flex items-center gap-2 text-[#FFD700] font-bold mb-6 hover:text-white transition-colors w-fit"
                 >
                     <ArrowLeft size={20} /> {t('backToHall')}
                 </Link>
@@ -66,7 +66,7 @@ const ArtifactDetail = () => {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-amber-200"
+                    className="bg-[#0A192F]/80 backdrop-blur-md rounded-3xl shadow-[0_0_40px_rgba(10,25,47,0.8)] overflow-hidden border border-[#FFD700]/30"
                 >
                     {/* Image */}
                     <div className="relative h-64 md:h-96">
@@ -86,8 +86,7 @@ const ArtifactDetail = () => {
 
                         {/* Hall badge */}
                         <div
-                            className="absolute top-4 right-4 px-4 py-2 rounded-full text-white text-sm font-bold shadow-lg"
-                            style={{ backgroundColor: hall.color }}
+                            className="absolute top-4 right-4 px-4 py-2 rounded-full text-[#0A192F] text-sm font-bold shadow-[0_0_15px_rgba(255,215,0,0.5)] bg-[#FFD700] border border-white/20"
                         >
                             {hall.icon} {isAr ? hall.nameAr : hall.name}
                         </div>
@@ -106,7 +105,7 @@ const ArtifactDetail = () => {
                                 />
                             </div>
                             <div className="flex-1">
-                                <p className="text-lg md:text-xl leading-relaxed text-gray-700 font-medium">
+                                <p className="text-lg md:text-xl leading-relaxed text-[#E5E7EB] font-medium">
                                     {isAr ? artifact.descriptionAr : artifact.description}
                                 </p>
                             </div>
@@ -117,13 +116,13 @@ const ArtifactDetail = () => {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
-                            className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-2xl border-2 border-indigo-200"
+                            className="bg-[#1A5276]/40 p-6 rounded-2xl border border-[#3498DB]/30"
                         >
                             <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xl font-bold text-indigo-800">📖 The Story</h3>
+                                <h3 className="text-xl font-bold text-[#FFD700]">📖 The Story</h3>
                                 <motion.button
                                     onClick={handleSpeak}
-                                    className="bg-indigo-500 text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-indigo-600 transition-colors flex items-center gap-2 shadow-md"
+                                    className="bg-[#3498DB] text-white px-4 py-2 rounded-full font-bold text-sm hover:bg-[#2980B9] transition-colors flex items-center gap-2 shadow-[0_0_15px_rgba(52,152,219,0.4)]"
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     id="listen-story-btn"
@@ -131,7 +130,7 @@ const ArtifactDetail = () => {
                                     <Volume2 size={16} /> {t('listenToStory')}
                                 </motion.button>
                             </div>
-                            <p className="text-indigo-900 leading-relaxed font-medium">
+                            <p className="text-[#E5E7EB] leading-relaxed font-medium">
                                 {isAr ? artifact.storyAr : artifact.story}
                             </p>
                         </motion.div>
@@ -141,10 +140,10 @@ const ArtifactDetail = () => {
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.4 }}
-                            className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-2xl border-2 border-green-300"
+                            className="bg-[#020C1B]/60 p-6 rounded-2xl border border-[#FFD700]/20"
                         >
-                            <h3 className="text-xl font-bold text-green-800 mb-2">{t('funFact')}</h3>
-                            <p className="text-green-900 font-medium leading-relaxed">
+                            <h3 className="text-xl font-bold text-[#FFD700] mb-2">{t('funFact')}</h3>
+                            <p className="text-[#E5E7EB] font-medium leading-relaxed">
                                 {isAr ? artifact.funFactAr : artifact.funFact}
                             </p>
                         </motion.div>
@@ -157,27 +156,27 @@ const ArtifactDetail = () => {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6"
+                                className="bg-[#1A5276]/40 border border-[#3498DB]/30 rounded-2xl p-6 text-[#E5E7EB]"
                             >
-                                <h3 className="text-lg font-bold text-blue-800 mb-2">📚 {t('parentMode')}</h3>
-                                <p className="text-blue-700 leading-relaxed">
+                                <h3 className="text-lg font-bold text-[#FFD700] mb-2">📚 {t('parentMode')}</h3>
+                                <p className="leading-relaxed">
                                     {t(`halls.${hall.id}.parentInfo`)}
                                 </p>
                             </motion.div>
                         )}
 
                         {/* Navigation */}
-                        <div className="flex justify-between items-center pt-4 border-t-2 border-amber-100">
+                        <div className="flex justify-between items-center pt-6 border-t border-[#FFD700]/20">
                             <Link
                                 to={`/hall/${hall.id}`}
-                                className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-full hover:bg-gray-200 transition-colors"
+                                className="px-6 py-3 bg-[#020C1B] text-[#85C1E9] font-bold rounded-full hover:text-white border border-[#1A5276] hover:bg-[#1A5276]/50 transition-colors"
                             >
                                 ← {t('backToHall')}
                             </Link>
                             {nextArtifact && (
                                 <motion.button
                                     onClick={() => navigate(`/artifact/${nextArtifact.id}`)}
-                                    className="px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-bold rounded-full shadow-md hover:shadow-lg transition-all"
+                                    className="px-6 py-3 bg-gradient-to-r from-[#FFD700] to-[#F39C12] text-[#0A192F] font-bold rounded-full shadow-[0_0_15px_rgba(255,215,0,0.5)] hover:shadow-[0_0_25px_rgba(255,215,0,0.7)] transition-all"
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >

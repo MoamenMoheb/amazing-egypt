@@ -57,10 +57,10 @@ const HallDetail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 pt-24 pb-10 px-4">
+        <div className="min-h-screen bg-[#020C1B] selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4">
             <div className="max-w-6xl mx-auto">
                 {/* Back button */}
-                <Link to="/map" className="flex items-center gap-2 text-amber-700 font-bold mb-6 hover:underline">
+                <Link to="/map" className="flex items-center gap-2 text-[#FFD700] font-bold mb-6 hover:text-white transition-colors w-fit">
                     <ArrowLeft size={20} /> {t('backToMap')}
                 </Link>
 
@@ -122,7 +122,7 @@ const HallDetail = () => {
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="absolute top-4 right-4 bg-white text-amber-700 px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2"
+                                className="absolute top-4 right-4 bg-[#FFD700] text-[#0A192F] px-4 py-2 rounded-full font-bold shadow-[0_0_15px_rgba(255,215,0,0.5)] flex items-center gap-2"
                             >
                                 {hall.badge.icon} {isAr ? hall.badge.nameAr : hall.badge.name}
                             </motion.div>
@@ -145,17 +145,21 @@ const HallDetail = () => {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-8"
+                        className="bg-[#1A5276]/40 backdrop-blur-md border border-[#3498DB]/30 rounded-2xl p-6 mb-8 text-[#E5E7EB]"
                     >
-                        <h3 className="text-lg font-bold text-blue-800 mb-2">📚 {t('parentMode')}</h3>
-                        <p className="text-blue-700 leading-relaxed">
+                        <h3 className="text-lg font-bold text-[#FFD700] mb-2 flex items-center gap-2">
+                            <span className="text-xl">📚</span> {t('parentMode')}
+                        </h3>
+                        <p className="leading-relaxed">
                             {t(`halls.${hall.id}.parentInfo`)}
                         </p>
                     </motion.div>
                 )}
 
                 {/* Artifacts Grid */}
-                <h2 className="text-2xl font-bold text-amber-800 mb-6">🏺 Artifacts</h2>
+                <h2 className="text-2xl font-bold text-[#FFD700] mb-6 drop-shadow-md flex items-center gap-2">
+                    <span className="text-3xl">🏺</span> Artifacts
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {hallArtifacts.map((artifact, i) => (
                         <ArtifactCard key={artifact.id} artifact={artifact} hallId={hall.id} index={i} />
@@ -169,16 +173,14 @@ const HallDetail = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center"
                     >
-                        <motion.button
+                        <button
                             onClick={() => setShowQuiz(true)}
-                            className="px-8 py-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xl font-bold rounded-full shadow-xl hover:shadow-2xl transition-all"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            className="px-8 py-4 bg-gradient-to-r from-[#FFD700] to-[orange] text-[#0A192F] text-xl font-bold rounded-full shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:shadow-[0_0_30px_rgba(255,215,0,0.6)] transition-all hover:scale-105 active:scale-95"
                             id="take-quiz-btn"
                         >
                             {t('takeQuiz')}
-                        </motion.button>
-                        <p className="text-gray-500 mt-2 text-sm">Explore {2 - viewedInHall > 0 ? `${2 - viewedInHall} more` : ''} artifacts to unlock!</p>
+                        </button>
+                        <p className="text-[#85C1E9] mt-3 tracking-wide text-sm font-medium">Explore {2 - viewedInHall > 0 ? `${2 - viewedInHall} more` : ''} artifacts to unlock!</p>
                     </motion.div>
                 )}
 
@@ -186,11 +188,11 @@ const HallDetail = () => {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="text-center bg-gradient-to-r from-green-50 to-emerald-50 p-8 rounded-3xl border-2 border-green-300 shadow-lg"
+                        className="text-center bg-[#1A5276]/30 backdrop-blur-md p-8 rounded-3xl border border-[#00A8E8]/40 shadow-[0_0_30px_rgba(0,168,232,0.2)]"
                     >
-                        <p className="text-4xl mb-2">{hall.badge.icon}</p>
-                        <p className="text-xl font-bold text-green-700">{t('hallComplete')}</p>
-                        <p className="text-green-600">{isAr ? hall.badge.nameAr : hall.badge.name} Badge Earned!</p>
+                        <p className="text-5xl mb-4 drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]">{hall.badge.icon}</p>
+                        <p className="text-2xl font-bold text-[#FFD700] mb-1">{t('hallComplete')}</p>
+                        <p className="text-[#E5E7EB] font-medium text-lg">{isAr ? hall.badge.nameAr : hall.badge.name} Badge Earned!</p>
                     </motion.div>
                 )}
             </div>
