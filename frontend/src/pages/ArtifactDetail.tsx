@@ -52,7 +52,7 @@ const ArtifactDetail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#020C1B] selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4">
+        <div className="min-h-screen bg-transparent selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Back button */}
                 <Link

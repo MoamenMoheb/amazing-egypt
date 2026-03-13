@@ -17,26 +17,29 @@ const Home = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#020C1B] font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-20 relative overflow-x-hidden">
+        <div className="min-h-screen bg-transparent font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-20 relative overflow-x-hidden">
 
             {/* Ambient Background Elements */}
             <div className="fixed inset-0 z-0 h-screen w-full pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-b from-[#020C1B] via-[#0A192F]/40 to-[#010612]" />
                 <div className="absolute top-0 right-0 w-96 h-96 bg-[#1A5276]/30 rounded-full mix-blend-screen filter blur-[150px] animate-pulse" />
                 <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#FFD700]/10 rounded-full mix-blend-screen filter blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 flex flex-col items-center">
 
-                {/* Hero Title */}
-                <motion.h1
+                {/* Hero Title Logo */}
+                <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, type: 'spring' }}
-                    className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4 text-center leading-normal bg-gradient-to-r from-[#FFD700] via-[#F5B041] to-[#FFD700] bg-clip-text text-transparent drop-shadow-md"
+                    className="mb-6 flex justify-center w-full"
                 >
-                    {t('title')}
-                </motion.h1>
+                    <img 
+                        src="/N Logo.png" 
+                        alt={t('title')} 
+                        className="h-40 sm:h-56 md:h-64 lg:h-72 w-auto max-w-full object-contain drop-shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:drop-shadow-[0_0_35px_rgba(255,215,0,0.6)] transition-all duration-300 transform hover:scale-105" 
+                    />
+                </motion.div>
                 <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

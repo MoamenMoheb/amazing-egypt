@@ -57,7 +57,7 @@ const HallDetail = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#020C1B] selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4">
+        <div className="min-h-screen bg-transparent selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4">
             <div className="max-w-6xl mx-auto">
                 {/* Back button */}
                 <Link to="/map" className="flex items-center gap-2 text-[#FFD700] font-bold mb-6 hover:text-white transition-colors w-fit">

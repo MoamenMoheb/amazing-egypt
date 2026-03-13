@@ -8,7 +8,6 @@ import Map from './pages/Map'
 import HallDetail from './pages/HallDetail'
 import ArtifactDetail from './pages/ArtifactDetail'
 import Badges from './pages/Badges'
-import MascotGuide from './components/MascotGuide'
 import './App.css'
 
 function App() {
@@ -16,7 +15,7 @@ function App() {
     <MuseumProvider>
       <MascotProvider>
         <Router>
-          <div className="min-h-screen bg-amber-50 font-sans text-gray-800">
+          <div className="min-h-screen font-sans text-gray-800">
             <Navbar />
             <main>
               <Routes>
@@ -28,7 +27,6 @@ function App() {
                 <Route path="/badges" element={<Badges />} />
               </Routes>
             </main>
-            <MascotGuide />
           </div>
         </Router>
       </MascotProvider>
