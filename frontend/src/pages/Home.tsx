@@ -1,13 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import Character from '../components/Character';
 import BadgeProgress from '../components/BadgeProgress';
 import BadgeDisplay from '../components/BadgeDisplay';
 
 const Home = () => {
-    const { t } = useTranslation();
     const navigate = useNavigate();
     const [showCharacter, setShowCharacter] = useState(false);
 
@@ -27,27 +25,7 @@ const Home = () => {
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 flex flex-col items-center">
 
-                {/* Hero Title Logo */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, type: 'spring' }}
-                    className="mb-6 flex justify-center w-full"
-                >
-                    <img 
-                        src="/N Logo.png" 
-                        alt={t('title')} 
-                        className="h-40 sm:h-56 md:h-64 lg:h-72 w-auto max-w-full object-contain drop-shadow-[0_0_20px_rgba(255,215,0,0.4)] hover:drop-shadow-[0_0_35px_rgba(255,215,0,0.6)] transition-all duration-300 transform hover:scale-105" 
-                    />
-                </motion.div>
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-[#85C1E9] text-lg md:text-xl font-medium mb-10 text-center"
-                >
-                    {t('welcome')}
-                </motion.p>
+                {/* Mascot Hero Section is at the top now */}
 
                 {/* Mascot Hero Section */}
                 {showCharacter && (
@@ -57,33 +35,23 @@ const Home = () => {
                         transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
                         className="flex flex-col items-center relative z-20"
                     >
-                        <div className="relative bg-[#020C1B]/60 p-8 rounded-[60px] backdrop-blur-md border border-[#FFD700]/30 shadow-[0_0_60px_rgba(255,215,0,0.15)] flex justify-center w-full max-w-md">
+                        <div className="relative bg-[#020C1B]/60 p-8 md:p-12 rounded-[60px] backdrop-blur-md border border-[#FFD700]/30 shadow-[0_0_60px_rgba(255,215,0,0.15)] flex justify-center w-[95%] max-w-xl mx-auto">
                             <Character
                                 inline
                                 size={280}
                                 mood="pointing"
-                                message="Welcome explorer! Visit the museum halls and complete quizzes to earn badges!"
+                                message="مرحباً بك أيها المستكشف! قم بزيارة قاعات المتحف وأكمل الاختبارات لربح الشارات!"
                             />
                         </div>
                     </motion.div>
                 )}
 
-                {/* Gamified Progress Bar */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="w-full relative z-30 -mt-6"
-                >
-                    <BadgeProgress />
-                </motion.div>
-
                 {/* Action Buttons */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 }}
-                    className="flex flex-col sm:flex-row gap-6 mt-12 mb-16 relative z-10"
+                    transition={{ delay: 0.8 }}
+                    className="flex flex-col sm:flex-row gap-6 mt-6 mb-12 relative z-10"
                 >
                     <motion.button
                         onClick={() => navigate('/halls')}
@@ -101,6 +69,16 @@ const Home = () => {
                     >
                         <span>🗺️</span> View Map
                     </motion.button>
+                </motion.div>
+
+                {/* Gamified Progress Bar */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 }}
+                    className="w-full relative z-30 mb-8"
+                >
+                    <BadgeProgress />
                 </motion.div>
 
                 {/* Badge Grid Section */}

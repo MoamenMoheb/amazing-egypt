@@ -121,33 +121,33 @@ const Character = ({
     };
 
     return (
-        <div className={`${inline ? 'relative' : 'fixed bottom-4 right-4 z-50'} flex flex-col items-center`}>
-
-            {/* Speech Bubble */}
+        <div className={`${inline ? 'relative' : 'fixed bottom-4 right-4 z-50'} flex items-center justify-center gap-10 md:gap-16`} dir="ltr">
+            
+            {/* Speech Bubble - On the left of the mascot */}
             <AnimatePresence>
                 {showMessage && displayedText && (
                     <motion.div
-                        initial={{ opacity: 0, y: 20, scale: 0.8 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.8 }}
-                        className="bg-gradient-to-br from-white to-amber-50 p-5 rounded-2xl shadow-2xl mb-3 max-w-[300px] relative z-30"
-                        style={{ border: '3px solid #F59E0B', borderBottomRightRadius: '6px' }}
+                        initial={{ opacity: 0, scale: 0.8, x: 20 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, x: 20 }}
+                        className="bg-gradient-to-br from-white to-amber-50 p-6 rounded-3xl shadow-2xl relative z-10 max-w-[280px]"
+                        style={{ border: '3px solid #F59E0B' }}
                     >
-                        <p className="text-gray-800 font-bold text-sm leading-relaxed">{displayedText}</p>
-                        {/* Tail */}
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0"
-                            style={{ borderLeft: '10px solid transparent', borderRight: '10px solid transparent', borderTop: '14px solid #F59E0B' }}
+                        <p className="text-[#020C1B] font-bold text-base leading-relaxed text-right md:text-lg" dir="rtl">{displayedText}</p>
+                        
+                        {/* Tail pointing right towards mascot */}
+                        <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-0 h-0 z-10"
+                            style={{ borderTop: '12px solid transparent', borderBottom: '12px solid transparent', borderLeft: '16px solid #F59E0B' }}
                         />
-                        <div className="absolute -bottom-[10px] left-1/2 -translate-x-[7px] w-0 h-0"
-                            style={{ borderLeft: '7px solid transparent', borderRight: '7px solid transparent', borderTop: '11px solid white' }}
+                        <div className="absolute top-1/2 -right-[11px] -translate-y-1/2 w-0 h-0 z-10"
+                            style={{ borderTop: '9px solid transparent', borderBottom: '9px solid transparent', borderLeft: '11px solid white' }}
                         />
                     </motion.div>
                 )}
             </AnimatePresence>
 
             {/* Character Container */}
-            <div className="relative" style={{ width: size, height: size }}>
-                {/* Ground shadow */}
+            <div className="relative flex justify-center items-center" style={{ width: size, height: size }}>
                 <div
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-[50%]"
                     style={{ width: size * 0.45, height: size * 0.06, background: 'radial-gradient(ellipse, rgba(0,0,0,0.15) 0%, transparent 70%)' }}

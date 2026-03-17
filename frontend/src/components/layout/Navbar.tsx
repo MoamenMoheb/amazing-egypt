@@ -17,9 +17,27 @@ const Navbar = () => {
     }, []);
 
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 p-4 font-sans justify-center flex">
-            <div className="bg-[#0A192F]/90 backdrop-blur-md rounded-full shadow-lg border border-[#FFD700]/30 px-4 md:px-6 py-3 flex justify-center items-center shadow-[0_4px_30px_rgba(255,215,0,0.1)] inline-block">
-                <div className="flex gap-2 md:gap-4">
+        <nav className="fixed top-0 left-0 w-full z-50 font-sans">
+            <div className="bg-[#0A192F]/90 backdrop-blur-md shadow-lg border-b border-[#FFD700]/30 px-6 py-3 flex items-center w-full relative h-[70px]">
+                
+                {/* Logo Section - Forced to visual left */}
+                <div className="absolute left-2 top-1/2 -translate-y-1/2">
+                    <Link 
+                        to="/" 
+                        className="flex flex-col items-start" 
+                        onPointerEnter={() => triggerReaction('pointing', `Welcome back to Amazing Egypt!`, 2000)} 
+                        onPointerLeave={() => triggerReaction('idle')}
+                    >
+                        <img 
+                            src="/N Logo.png" 
+                            alt="Amazing Egypt" 
+                            className="h-16 md:h-20 w-auto object-contain drop-shadow-[0_0_10px_rgba(255,215,0,0.3)] hover:drop-shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-all duration-300 transform hover:scale-105" 
+                        />
+                    </Link>
+                </div>
+
+                {/* Navigation Links - Centered */}
+                <div className="flex gap-2 md:gap-4 mx-auto">
                     <NavLink to="/" icon={<HomeIcon size={18} />} label={t('nav.home')} active={location.pathname === '/'} triggerReaction={triggerReaction} />
                     <NavLink to="/halls" icon={<Landmark size={18} />} label={t('nav.halls')} active={location.pathname === '/halls'} triggerReaction={triggerReaction} />
                     <NavLink to="/map" icon={<Map size={18} />} label={t('nav.map')} active={location.pathname === '/map' || location.pathname.startsWith('/hall/')} triggerReaction={triggerReaction} />
