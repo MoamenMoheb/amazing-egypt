@@ -19,14 +19,14 @@ const BadgeDisplay = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.1, type: 'spring', stiffness: 200 }}
                         className={`relative flex flex-col items-center p-6 rounded-3xl border-3 shadow-lg transition-all ${isEarned
-                                ? 'bg-gradient-to-b from-amber-50 to-yellow-100 border-amber-400 shadow-amber-200'
-                                : 'bg-gray-100 border-gray-300 opacity-60'
+                            ? 'bg-gradient-to-b from-[#1A5276]/60 to-[#FFD700]/20 border-[#FFD700] shadow-[0_0_20px_rgba(255,215,0,0.3)]'
+                            : 'bg-[#020C1B]/50 border-[#1A5276] opacity-60'
                             }`}
                         style={{ borderWidth: '3px' }}
                     >
                         {/* Glow for earned */}
                         {isEarned && (
-                            <div className="absolute inset-0 rounded-3xl bg-amber-400 opacity-10 animate-pulse" />
+                            <div className="absolute inset-0 rounded-3xl bg-[#FFD700] opacity-10 animate-pulse" />
                         )}
 
                         {/* Badge icon */}
@@ -35,7 +35,7 @@ const BadgeDisplay = () => {
                         </div>
 
                         {/* Badge name */}
-                        <p className={`text-sm font-bold text-center ${isEarned ? 'text-amber-800' : 'text-gray-500'
+                        <p className={`text-sm font-bold text-center mt-2 ${isEarned ? 'text-[#FFD700]' : 'text-[#85C1E9]'
                             }`}>
                             {isEarned ? badge.name : '???'}
                         </p>
@@ -45,7 +45,7 @@ const BadgeDisplay = () => {
                             <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
-                                className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-md"
+                                className="absolute -top-2 -right-2 bg-green-500 text-white text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-[#0A192F]"
                             >
                                 ✓
                             </motion.div>

@@ -8,12 +8,10 @@ const Halls = () => {
     const { badges, score } = useMuseum();
 
     return (
-        <div className="min-h-screen bg-[#020C1B] font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-20 px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-transparent font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-20 px-4 relative overflow-hidden">
             
             {/* Background elements */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-10" style={{ backgroundImage: `url('/hero-bg.jpeg')` }} />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#020C1B] via-[#010612]/90 to-[#000000]" />
                 <div className="absolute top-10 left-1/4 w-60 h-60 bg-yellow-500 rounded-full mix-blend-screen filter blur-[120px] opacity-10 animate-pulse" />
                 <div className="absolute bottom-1/4 right-1/4 w-60 h-60 bg-[#1A5276] rounded-full mix-blend-screen filter blur-[120px] opacity-20 animate-pulse" style={{ animationDelay: '2s' }} />
             </div>

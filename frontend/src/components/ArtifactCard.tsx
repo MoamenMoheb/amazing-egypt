@@ -20,7 +20,7 @@ const ArtifactCard = ({ artifact, index }: ArtifactCardProps) => {
             transition={{ delay: index * 0.15, duration: 0.5 }}
         >
             <Link to={`/artifact/${artifact.id}`} className="block group">
-                <div className="relative bg-white rounded-3xl overflow-hidden shadow-lg border-3 border-transparent group-hover:border-amber-400 transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-2xl"
+                <div className="relative bg-[#0A192F]/80 backdrop-blur-md rounded-3xl overflow-hidden shadow-[0_0_20px_rgba(10,25,47,0.5)] border-3 border-transparent group-hover:border-[#FFD700] transition-all duration-300 transform group-hover:-translate-y-2 group-hover:shadow-[0_0_30px_rgba(255,215,0,0.25)]"
                     style={{ borderWidth: '3px' }}
                 >
                     {/* Image */}
@@ -53,13 +53,13 @@ const ArtifactCard = ({ artifact, index }: ArtifactCardProps) => {
 
                     {/* Description */}
                     <div className="p-4">
-                        <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">{artifact.description}</p>
-                        <div className="mt-3 flex justify-between items-center">
-                            <span className="text-amber-600 text-xs font-bold bg-amber-50 px-3 py-1 rounded-full">
+                        <p className="text-[#E5E7EB] text-sm line-clamp-2 leading-relaxed">{artifact.description}</p>
+                        <div className="mt-3 flex justify-between items-center text-[#F39C12] font-bold group-hover:text-[#FFD700] transition-colors pt-2 border-t border-[#1A5276]">
+                            <span className="text-xs uppercase tracking-wider">
                                 Tap to Explore
                             </span>
                             <motion.span
-                                className="text-amber-500 font-bold text-lg"
+                                className="text-lg"
                                 animate={{ x: [0, 5, 0] }}
                                 transition={{ repeat: Infinity, duration: 1.5 }}
                             >

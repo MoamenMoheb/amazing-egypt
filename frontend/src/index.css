@@ -54,9 +54,16 @@ html {
 }
 
 body {
-  background: var(--color-brand-dark);
+  background: linear-gradient(rgba(2, 12, 27, 0.7), rgba(2, 12, 27, 0.8)), url('/images/egyptian-bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: var(--color-brand-light);
   min-height: 100vh;
+}
+
+.bg-egyptian-overlay {
+  background: linear-gradient(rgba(2, 12, 27, 0.4), rgba(2, 12, 27, 0.6));
 }
 
 /* Custom scrollbar */
