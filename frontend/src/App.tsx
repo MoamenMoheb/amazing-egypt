@@ -8,6 +8,7 @@ import Map from './pages/Map'
 import HallDetail from './pages/HallDetail'
 import ArtifactDetail from './pages/ArtifactDetail'
 import Badges from './pages/Badges'
+import BackgroundMusic from './components/BackgroundMusic'
 import './App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Router>
           <div className="min-h-screen font-sans text-gray-800">
             <Navbar />
+            <BackgroundMusic />
             <main>
               <Routes>
                 <Route path="/" element={<Home />} />

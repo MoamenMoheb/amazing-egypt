@@ -16,13 +16,13 @@ const BadgeProgress = () => {
                     <div>
                         <h3 className="text-xl md:text-2xl font-bold text-[#FFD700] mb-1">
                             {earnedBadgesCount === 0
-                                ? "Start Your Adventure!"
+                                ? "ابدأ مغامرتك"
                                 : earnedBadgesCount === totalBadges
                                     ? "Museum Master! 🏆"
                                     : "Keep Exploring!"}
                         </h3>
-                        <p className="text-[#85C1E9] font-medium text-sm md:text-base">
-                            You've earned <span className="text-white font-bold">{earnedBadgesCount}</span> out of <span className="text-white font-bold">{totalBadges}</span> badges!
+                        <p className="text-[#85C1E9] font-medium text-sm md:text-base" dir="rtl">
+                            لقد حصلت على <span className="text-white font-bold">{earnedBadgesCount}</span> من أصل <span className="text-white font-bold">{totalBadges}</span> شارات!
                         </p>
                     </div>
                     <div className="text-right">

@@ -35,12 +35,12 @@ const Home = () => {
                         transition={{ duration: 0.6, type: 'spring', bounce: 0.4 }}
                         className="flex flex-col items-center relative z-20"
                     >
-                        <div className="relative bg-[#020C1B]/60 p-8 md:p-12 rounded-[60px] backdrop-blur-md border border-[#FFD700]/30 shadow-[0_0_60px_rgba(255,215,0,0.15)] flex justify-center w-[95%] max-w-xl mx-auto">
+                        <div className="flex justify-center w-[95%] max-w-xl mx-auto relative">
                             <Character
                                 inline
                                 size={280}
                                 mood="pointing"
-                                message="مرحباً بك أيها المستكشف! قم بزيارة قاعات المتحف وأكمل الاختبارات لربح الشارات!"
+                                message="اهلا بك ايها المستكشف انا اسمي چيمو , ساكون معك خلال رحلتك الاستكشافية ... هيا بنا لنبدأ المغامرة "
                             />
                         </div>
                     </motion.div>
@@ -59,7 +59,7 @@ const Home = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <span>🏛️</span> Explore Halls
+                        <span>🏛️</span> استكشف القاعات
                     </motion.button>
                     <motion.button
                         onClick={() => navigate('/map')}
@@ -67,7 +67,7 @@ const Home = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
-                        <span>🗺️</span> View Map
+                        <span>🗺️</span> عرض الخريطة
                     </motion.button>
                 </motion.div>
 
@@ -90,7 +90,7 @@ const Home = () => {
                 >
                     <div className="flex items-center gap-4 mb-8">
                         <span className="text-4xl">🏅</span>
-                        <h2 className="text-3xl font-bold text-[#FFD700] drop-shadow-sm">Your Badge Collection</h2>
+                        <h2 className="text-3xl font-bold text-[#FFD700] drop-shadow-sm">مجموعة شاراتك</h2>
                     </div>
 
                     <BadgeDisplay />
