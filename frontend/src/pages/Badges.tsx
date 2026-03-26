@@ -10,7 +10,7 @@ const Badges = () => {
     const { badges, score } = useMuseum();
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 pt-24 pb-10 px-4">
+        <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 pt-0 pb-10 px-4">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <motion.div

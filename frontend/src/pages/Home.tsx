@@ -15,7 +15,7 @@ const Home = () => {
     }, []);
 
     return (
-        <div className="min-h-screen bg-transparent font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-20 relative overflow-x-hidden">
+        <div className="min-h-screen bg-transparent font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-0 pb-20 relative overflow-x-hidden">
 
             {/* Ambient Background Elements */}
             <div className="fixed inset-0 z-0 h-screen w-full pointer-events-none">
