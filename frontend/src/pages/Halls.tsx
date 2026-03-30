@@ -8,7 +8,7 @@ const Halls = () => {
     const { badges, score } = useMuseum();
 
     return (
-        <div className="min-h-screen bg-transparent font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-20 px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-transparent font-sans selection:bg-[#FFD700] selection:text-[#0A192F] pt-0 pb-20 px-4 relative overflow-hidden">
             
             {/* Background elements */}
             <div className="fixed inset-0 z-0 pointer-events-none">

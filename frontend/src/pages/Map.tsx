@@ -6,7 +6,7 @@ const Map = () => {
     const { t } = useTranslation();
 
     return (
-        <div className="min-h-screen bg-[#020C1B] selection:bg-[#FFD700] selection:text-[#0A192F] pt-24 pb-10 px-4 flex flex-col items-center">
+        <div className="min-h-screen bg-[#020C1B] selection:bg-[#FFD700] selection:text-[#0A192F] pt-0 pb-10 px-4 flex flex-col items-center">
 
             {/* Background elements to match Halls/Home */}
             <div className="fixed inset-0 z-0 pointer-events-none">
