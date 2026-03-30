@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useMascot } from '../context/MascotContext';
 
@@ -12,6 +12,7 @@ const REACTION_IMAGES: Record<string, string> = {
     confused: '/character/New-Mascot9.png',
     thinking: '/character/New-Mascot11.png',
     idea: '/character/New-Mascot8.png',
+    speaking: '/character/New-Mascot1.png',
 };
 
 interface CharacterProps {
@@ -19,6 +20,7 @@ interface CharacterProps {
     inline?: boolean;
     mood?: string;
     message?: string;
+    playIntroVideo?: boolean;
 }
 
 const Character = ({
@@ -26,7 +28,9 @@ const Character = ({
     inline = false,
     mood: propMood,
     message: propMessage,
+    playIntroVideo = false,
 }: CharacterProps) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
     const { currentReaction: contextReaction, message: contextMessage } = useMascot();
     const [showMessage, setShowMessage] = useState(false);
     const [displayedText, setDisplayedText] = useState('');
@@ -56,6 +60,26 @@ const Character = ({
             setDisplayedText('');
         }
     }, [message]);
+    
+    // Manual play trigger and initial load handling
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(error => {
+                console.warn("Video play failed:", error);
+            });
+        }
+    }, []);
+
+    const handleHover = () => {
+        if (videoRef.current) {
+            if (videoRef.current.ended) {
+                videoRef.current.currentTime = 0;
+            }
+            videoRef.current.play().catch(error => {
+                console.warn("Video replay failed:", error);
+            });
+        }
+    };
 
     // Framer Motion Variants for Mascot
     const mascotVariants: Variants = {
@@ -121,25 +145,32 @@ const Character = ({
     };
 
     return (
-        <div className={`${inline ? 'relative' : 'fixed bottom-4 right-4 z-50'} flex items-center justify-center gap-10 md:gap-16`} dir="ltr">
+        <div className={`${inline ? 'relative w-full' : 'fixed bottom-4 right-4 z-[9999]'} flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 max-w-[100vw] px-4 md:px-0`} dir="ltr">
             
-            {/* Speech Bubble - On the left of the mascot */}
-            <AnimatePresence>
+            {/* Speech Bubble */}
+            <AnimatePresence mode="wait">
                 {showMessage && displayedText && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8, x: 20 }}
-                        animate={{ opacity: 1, scale: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.8, x: 20 }}
-                        className="bg-gradient-to-br from-white to-amber-50 p-6 rounded-3xl shadow-2xl relative z-10 max-w-[280px]"
-                        style={{ border: '3px solid #F59E0B' }}
+                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.8, y: 20 }}
+                        className="bg-gradient-to-br from-white to-amber-50 p-5 md:p-6 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] relative z-10 w-[min(90vw,400px)] md:w-auto md:max-w-[320px] border-[3px] border-[#F59E0B]"
                     >
-                        <p className="text-[#020C1B] font-bold text-base leading-relaxed text-right md:text-lg" dir="rtl">{displayedText}</p>
+                        <p className="text-[#020C1B] font-bold text-sm leading-relaxed text-right md:text-lg" dir="rtl">{displayedText}</p>
                         
-                        {/* Tail pointing right towards mascot */}
-                        <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-0 h-0 z-10"
+                        {/* Tail pointing down (mobile) */}
+                        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-0 h-0 z-10 md:hidden"
+                            style={{ borderLeft: '12px solid transparent', borderRight: '12px solid transparent', borderTop: '16px solid #F59E0B' }}
+                        />
+                        <div className="absolute -bottom-[11px] left-1/2 -translate-x-1/2 w-0 h-0 z-10 md:hidden"
+                            style={{ borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderTop: '11px solid white' }}
+                        />
+
+                        {/* Tail pointing right (desktop) */}
+                        <div className="absolute top-1/2 -right-4 -translate-y-1/2 w-0 h-0 z-10 hidden md:block"
                             style={{ borderTop: '12px solid transparent', borderBottom: '12px solid transparent', borderLeft: '16px solid #F59E0B' }}
                         />
-                        <div className="absolute top-1/2 -right-[11px] -translate-y-1/2 w-0 h-0 z-10"
+                        <div className="absolute top-1/2 -right-[11px] -translate-y-1/2 w-0 h-0 z-10 hidden md:block"
                             style={{ borderTop: '9px solid transparent', borderBottom: '9px solid transparent', borderLeft: '11px solid white' }}
                         />
                     </motion.div>
@@ -147,25 +178,53 @@ const Character = ({
             </AnimatePresence>
 
             {/* Character Container */}
-            <div className="relative flex justify-center items-center" style={{ width: size, height: size }}>
+            <div className="relative flex justify-center items-center shrink-0" style={{ width: `min(${size}px, 80vw)`, height: `min(${size}px, 80vw)` }}>
                 <div
                     className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-[50%]"
-                    style={{ width: size * 0.45, height: size * 0.06, background: 'radial-gradient(ellipse, rgba(0,0,0,0.15) 0%, transparent 70%)' }}
+                    style={{ width: '45%', height: '6%', background: 'radial-gradient(ellipse, rgba(0,0,0,0.15) 0%, transparent 70%)' }}
                 />
 
-                {/* Character image */}
-                <motion.img
-                    src={activeMascotImg}
-                    alt="Pharaoh Robot - Your Museum Guide"
-                    className="absolute inset-0 w-full h-full object-contain z-10 cursor-pointer select-none"
-                    style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.12))' }}
-                    draggable={false}
-                    variants={mascotVariants}
-                    initial="idle"
-                    animate={currentReaction === 'thinking' ? 'thinking' : currentReaction === 'celebration' ? 'excited' : currentReaction === 'pointing' ? 'pointing' : 'idle'}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.93 }}
-                />
+                {/* Character image or Video */}
+                {(playIntroVideo || currentReaction === 'speaking') ? (
+                    <motion.div 
+                        className="absolute inset-0 w-full h-full z-10 cursor-pointer" 
+                        style={{ mixBlendMode: 'screen' }}
+                        onMouseEnter={handleHover}
+                        animate={{ 
+                            y: [0, -15, 0],
+                        }}
+                        transition={{ 
+                            duration: 4,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                        }}
+                    >
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            muted
+                            playsInline
+                            className="w-full h-full object-contain relative z-10"
+                            style={{ mixBlendMode: 'screen' }}
+                        >
+                            <source src="/character/speaking.webm" type="video/webm" />
+                            <source src="/character/speaking.mp4" type="video/mp4" />
+                        </video>
+                    </motion.div>
+                ) : (
+                    <motion.img
+                        src={activeMascotImg}
+                        alt="Pharaoh Robot - Your Museum Guide"
+                        className="absolute inset-0 w-full h-full object-contain z-10 cursor-pointer select-none"
+                        style={{ filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.12))' }}
+                        draggable={false}
+                        variants={mascotVariants}
+                        initial="idle"
+                        animate={currentReaction === 'thinking' ? 'thinking' : currentReaction === 'celebration' ? 'excited' : currentReaction === 'pointing' ? 'pointing' : 'idle'}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.93 }}
+                    />
+                )}
 
                 {/* Sparkles for excited/celebrate */}
                 {currentReaction === 'celebration' && (

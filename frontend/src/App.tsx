@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { MuseumProvider } from './context/MuseumContext'
 import { MascotProvider } from './context/MascotContext'
-import Navbar from './components/layout/Navbar'
 import Home from './pages/Home'
 import Halls from './pages/Halls'
 import Map from './pages/Map'
@@ -17,7 +16,6 @@ function App() {
       <MascotProvider>
         <Router>
           <div className="min-h-screen font-sans text-gray-800">
-            <Navbar />
             <BackgroundMusic />
             <main>
               <Routes>

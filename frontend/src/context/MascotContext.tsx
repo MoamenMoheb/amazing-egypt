@@ -8,7 +8,8 @@ type MascotReaction =
     | 'celebration'
     | 'confused'
     | 'thinking'
-    | 'idea';
+    | 'idea'
+    | 'speaking';
 
 interface MascotContextType {
     currentReaction: MascotReaction;
