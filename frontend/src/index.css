@@ -91,3 +91,22 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* ===== Map Fog Overlay Animations ===== */
+@keyframes fog-pulse-anim {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes fog-breathe {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.85; }
+}
+
+.fog-polygon {
+  animation: fog-breathe 5s ease-in-out infinite;
+}
+
+.fog-pulse {
+  animation: fog-pulse-anim 3s ease-in-out infinite;
+}

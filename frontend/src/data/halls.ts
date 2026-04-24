@@ -13,6 +13,12 @@ export interface Hall {
   width: number;
   height: number;
   artifactIds: string[];
+  /** Polygon vertices as percentage coordinates on the map image */
+  polygon: { x: number; y: number }[];
+  /** Sequential unlock position (1 = first/default unlocked) */
+  unlockOrder: number;
+  /** Hall ID that must be completed before this hall unlocks. null = unlocked by default */
+  prerequisiteHallId: string | null;
   quizQuestion: {
     question: string;
     questionAr: string;
@@ -43,6 +49,16 @@ export const hallsData: Hall[] = [
     y: 10,
     width: 40,
     height: 40,
+    polygon: [
+      { x: 57.07, y: 95.13 },
+      { x: 40.45, y: 74.3 },
+      { x: 67.16, y: 51.12 },
+      { x: 76.32, y: 76.51 },
+      { x: 75.97, y: 87.06 },
+      { x: 79.38, y: 95.26 },
+    ],
+    unlockOrder: 2,
+    prerequisiteHallId: "hanging-obelisk",
     artifactIds: [
       "colossal-statue-of-ramesses-ii",
       "colossus-of-a-ptolemaic-king",
@@ -78,6 +94,17 @@ export const hallsData: Hall[] = [
     y: 10,
     width: 30,
     height: 40,
+    polygon: [
+      { x: 40.17, y: 74.19 },
+      { x: 67.09, y: 50.89 },
+      { x: 58.42, y: 23.15 },
+      { x: 43.3, y: 23.28 },
+      { x: 43.22, y: 25.76 },
+      { x: 10.3, y: 25.23 },
+      { x: 10.23, y: 34.35 },
+    ],
+    unlockOrder: 4,
+    prerequisiteHallId: "khufu-s-boats",
     artifactIds: [
       "colossal-osiride-statue-of-king-senwosret-i",
       "doorway-of-king-amenemhat-i",
@@ -122,6 +149,18 @@ export const hallsData: Hall[] = [
     y: 60,
     width: 30,
     height: 30,
+    polygon: [
+      { x: 5.33, y: 0.13 },
+      { x: 5.26, y: 16.28 },
+      { x: 7.95, y: 26.17 },
+      { x: 10.16, y: 26.17 },
+      { x: 10.16, y: 34.11 },
+      { x: 56.89, y: 95.52 },
+      { x: 0, y: 95.52 },
+      { x: 0.07, y: 0.13 },
+    ],
+    unlockOrder: 1,
+    prerequisiteHallId: null,
     artifactIds: ["obelisk", "untitled-2"],
     quizQuestion: {
       question: "What can you find in Hanging Obelisk?",
@@ -151,6 +190,14 @@ export const hallsData: Hall[] = [
     y: 60,
     width: 40,
     height: 30,
+    polygon: [
+      { x: 70, y: 58.8 },
+      { x: 99.83, y: 58.28 },
+      { x: 99.83, y: 95.39 },
+      { x: 78.95, y: 95.39 },
+    ],
+    unlockOrder: 3,
+    prerequisiteHallId: "grand-hall",
     artifactIds: ["khufu-s-boats", "pyramid-area-boats-egyptatours"],
     quizQuestion: {
       question: "What can you find in Khufu's Boats?",
@@ -180,6 +227,14 @@ export const hallsData: Hall[] = [
     y: 100,
     width: 70,
     height: 20,
+    polygon: [
+      { x: 59.42, y: 24.84 },
+      { x: 99.55, y: 24.58 },
+      { x: 99.76, y: 58.05 },
+      { x: 70.14, y: 57.92 },
+    ],
+    unlockOrder: 5,
+    prerequisiteHallId: "grand-stairs",
     artifactIds: [
       "a-cup-treasure-of-tod",
       "a-gilt-hawk-figure-dendera-treasure-hoards",
@@ -222,6 +277,15 @@ export const hallsData: Hall[] = [
     y: 130,
     width: 40,
     height: 20,
+    polygon: [
+      { x: 5.47, y: 0.13 },
+      { x: 5.4, y: 15.89 },
+      { x: 8.17, y: 26.3 },
+      { x: 99.83, y: 24.09 },
+      { x: 99.9, y: 0.26 },
+    ],
+    unlockOrder: 6,
+    prerequisiteHallId: "main-galleries",
     artifactIds: [
       "anubis-on-a-chest",
       "canopic-chest",

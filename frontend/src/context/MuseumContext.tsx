@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { hallsData } from '../data/halls';
 
 interface MuseumState {
     badges: string[];
@@ -9,6 +10,14 @@ interface MuseumState {
     toggleParentMode: () => void;
     score: number;
     addScore: (points: number) => void;
+    /** Array of unlocked hall IDs */
+    unlockedHalls: string[];
+    /** Check if a specific hall is unlocked */
+    isHallUnlocked: (hallId: string) => boolean;
+    /** Check if all artifacts in a hall have been viewed */
+    isHallComplete: (hallId: string) => boolean;
+    /** Manually unlock a hall */
+    unlockHall: (hallId: string) => void;
 }
 
 const MuseumContext = createContext<MuseumState | null>(null);
@@ -38,6 +47,17 @@ export const MuseumProvider = ({ children }: { children: ReactNode }) => {
         } catch { return 0; }
     });
 
+    const [unlockedHalls, setUnlockedHalls] = useState<string[]>(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem('gem-unlocked-halls') || '[]');
+            // Always ensure the first hall (hanging-obelisk) is unlocked
+            if (!saved.includes('hanging-obelisk')) {
+                saved.push('hanging-obelisk');
+            }
+            return saved;
+        } catch { return ['hanging-obelisk']; }
+    });
+
     const [isParentMode, setIsParentMode] = useState(false);
 
     useEffect(() => {
@@ -52,6 +72,10 @@ export const MuseumProvider = ({ children }: { children: ReactNode }) => {
         localStorage.setItem('gem-score', String(score));
     }, [score]);
 
+    useEffect(() => {
+        localStorage.setItem('gem-unlocked-halls', JSON.stringify(unlockedHalls));
+    }, [unlockedHalls]);
+
     const earnBadge = (id: string) => {
         setBadges(prev => prev.includes(id) ? prev : [...prev, id]);
     };
@@ -64,11 +88,45 @@ export const MuseumProvider = ({ children }: { children: ReactNode }) => {
 
     const addScore = (points: number) => setScore(prev => prev + points);
 
+    const unlockHall = useCallback((hallId: string) => {
+        setUnlockedHalls(prev => prev.includes(hallId) ? prev : [...prev, hallId]);
+    }, []);
+
+    const isHallUnlocked = useCallback((hallId: string): boolean => {
+        return unlockedHalls.includes(hallId);
+    }, [unlockedHalls]);
+
+    const isHallComplete = useCallback((hallId: string): boolean => {
+        const hall = hallsData.find(h => h.id === hallId);
+        if (!hall) return false;
+        return hall.artifactIds.every(id => viewedArtifacts.includes(id));
+    }, [viewedArtifacts]);
+
+    // Auto-unlock: when all artifacts in a hall are viewed, unlock the next hall
+    useEffect(() => {
+        const sortedHalls = [...hallsData].sort((a, b) => a.unlockOrder - b.unlockOrder);
+
+        for (const hall of sortedHalls) {
+            // Check if this hall is unlocked and complete
+            if (!unlockedHalls.includes(hall.id)) continue;
+
+            const allViewed = hall.artifactIds.every(id => viewedArtifacts.includes(id));
+            if (!allViewed) continue;
+
+            // Find the next hall in the unlock chain
+            const nextHall = sortedHalls.find(h => h.unlockOrder === hall.unlockOrder + 1);
+            if (nextHall && !unlockedHalls.includes(nextHall.id)) {
+                unlockHall(nextHall.id);
+            }
+        }
+    }, [viewedArtifacts, unlockedHalls, unlockHall]);
+
     return (
         <MuseumContext.Provider value={{
             badges, viewedArtifacts, isParentMode,
             earnBadge, markViewed, toggleParentMode,
             score, addScore,
+            unlockedHalls, isHallUnlocked, isHallComplete, unlockHall,
         }}>
             {children}
         </MuseumContext.Provider>

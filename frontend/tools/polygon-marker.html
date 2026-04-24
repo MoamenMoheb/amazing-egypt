@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Museum Map — Polygon Marker Tool</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e1a;
+            color: #e0e0e0;
+            overflow-x: auto;
+            overflow-y: auto;
+        }
+
+        /* ===== TOP TOOLBAR ===== */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: #151d2e;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.4);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .toolbar h1 {
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .toolbar label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toolbar select {
+            background: #0f172a;
+            color: #FFD700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .toolbar select:hover {
+            border-color: #FFD700;
+            box-shadow: 0 0 12px rgba(255, 215, 0, 0.15);
+        }
+
+        .toolbar select:focus {
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #1a1a2e;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .point-count {
+            font-size: 13px;
+            color: #94a3b8;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .point-count strong {
+            color: #FFD700;
+        }
+
+        /* ===== MAP CONTAINER ===== */
+        .map-container {
+            margin-top: 80px;
+            margin-right: 350px;
+            position: relative;
+            display: inline-block;
+            cursor: crosshair;
+            z-index: 1;
+        }
+
+        .map-container img {
+            display: block;
+            max-width: none;
+            /* Very large map — user scrolls */
+        }
+
+        .map-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        /* ===== POINT MARKERS ===== */
+        .point-marker {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #FFD700;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6), 0 2px 4px rgba(0,0,0,0.4);
+            pointer-events: none;
+            transition: all 0.15s ease;
+        }
+
+        .point-marker::after {
+            content: attr(data-index);
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 700;
+            color: #FFD700;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        /* ===== SIDE PANEL ===== */
+        .side-panel {
+            position: fixed;
+            top: 80px;
+            right: 0;
+            width: 340px;
+            bottom: 0;
+            background: #111827;
+            border-left: 2px solid rgba(255, 215, 0, 0.3);
+            z-index: 9998;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: -4px 0 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .side-panel h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.15);
+        }
+
+        .hall-summary {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .hall-summary:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .hall-summary.active {
+            border-color: rgba(255, 215, 0, 0.4);
+            background: rgba(255, 215, 0, 0.06);
+        }
+
+        .hall-summary .hall-name {
+            font-size: 13px;
+            font-weight: 700;
+            color: #e2e8f0;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hall-summary .hall-points {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .hall-summary .hall-points strong {
+            color: #22c55e;
+        }
+
+        .hall-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .hall-actions .btn {
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+
+        /* ===== JSON OUTPUT MODAL ===== */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal {
+            background: #1e293b;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            padding: 24px;
+            width: 700px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #FFD700;
+            margin-bottom: 16px;
+        }
+
+        .modal textarea {
+            flex: 1;
+            min-height: 350px;
+            background: #0f172a;
+            color: #a5f3fc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: flex-end;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.3);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== INSTRUCTIONS BAR ===== */
+        .instructions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 340px;
+            background: #1a2235;
+            border-top: 2px solid rgba(255, 215, 0, 0.3);
+            padding: 10px 24px;
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .instructions kbd {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #FFD700;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* ===== COORDINATE TOOLTIP ===== */
+        .coord-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.85);
+            color: #FFD700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
+            z-index: 800;
+            display: none;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        /* ===== COMPLETED POLYGONS (different colors per hall) ===== */
+        .color-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <h1>🗺️ Polygon Marker</h1>
+        <div class="toolbar-divider"></div>
+
+        <div style="display:flex;flex-direction:column;gap:2px;">
+            <label>Active Hall</label>
+            <select id="hallSelect">
+                <option value="hanging-obelisk">🗼 Hanging Obelisk</option>
+                <option value="grand-hall">🏺 Grand Hall</option>
+                <option value="khufu-s-boats">⛵ Khufu's Boats</option>
+                <option value="grand-stairs">🪜 Grand Stairs</option>
+                <option value="main-galleries">🏛️ Main Galleries</option>
+                <option value="tutankhamun-galleries">👑 Tutankhamun Galleries</option>
+            </select>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <span class="point-count" id="pointCount">Points: <strong>0</strong></span>
+
+        <button class="btn btn-secondary" id="btnUndo" disabled>⬅ Undo</button>
+        <button class="btn btn-primary" id="btnClose" disabled>✅ Close Polygon</button>
+        <button class="btn btn-danger" id="btnClear">🗑️ Clear Hall</button>
+
+        <div style="flex:1"></div>
+
+        <button class="btn btn-success" id="btnExport">📋 Export JSON</button>
+    </div>
+
+    <!-- MAP AREA -->
+    <div class="map-container" id="mapContainer">
+        <img id="mapImage" src="../public/images/museum_map.png" alt="Museum Map" />
+        <canvas id="drawCanvas"></canvas>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel" id="sidePanel">
+        <h2>📐 Hall Polygons</h2>
+        <div id="hallList"></div>
+    </div>
+
+    <!-- COORDINATE TOOLTIP -->
+    <div class="coord-tooltip" id="coordTooltip"></div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="instructions">
+        <span><kbd>Click</kbd> Add point</span>
+        <span><kbd>Right-click</kbd> Close polygon</span>
+        <span><kbd>Ctrl+Z</kbd> Undo last point</span>
+        <span><kbd>Esc</kbd> Clear current hall</span>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div class="modal-backdrop" id="exportModal">
+        <div class="modal">
+            <h2>📋 Exported Polygon Data (JSON)</h2>
+            <textarea id="jsonOutput" readonly></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="document.getElementById('exportModal').classList.remove('show')">Close</button>
+                <button class="btn btn-primary" id="btnCopy">📋 Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== HALL COLORS =====
+        const HALL_COLORS = {
+            'hanging-obelisk':        { fill: 'rgba(233, 30, 99, 0.20)',  stroke: '#E91E63', name: '🗼 Hanging Obelisk' },
+            'grand-hall':             { fill: 'rgba(255, 215, 0, 0.20)',  stroke: '#FFD700', name: '🏺 Grand Hall' },
+            'khufu-s-boats':          { fill: 'rgba(139, 69, 19, 0.20)',  stroke: '#D2691E', name: '⛵ Khufu\'s Boats' },
+            'grand-stairs':           { fill: 'rgba(30, 144, 255, 0.20)', stroke: '#1E90FF', name: '🪜 Grand Stairs' },
+            'main-galleries':         { fill: 'rgba(76, 175, 80, 0.20)',  stroke: '#4CAF50', name: '🏛️ Main Galleries' },
+            'tutankhamun-galleries':  { fill: 'rgba(156, 39, 176, 0.20)', stroke: '#9C27B0', name: '👑 Tutankhamun Galleries' },
+        };
+
+        // ===== STATE =====
+        const polygons = {};  // { hallId: [ {x, y}, ... ] }
+        let currentPoints = []; // Points for the currently-selected hall being drawn
+
+        // ===== DOM =====
+        const hallSelect = document.getElementById('hallSelect');
+        const mapImage = document.getElementById('mapImage');
+        const mapContainer = document.getElementById('mapContainer');
+        const canvas = document.getElementById('drawCanvas');
+        const ctx = canvas.getContext('2d');
+        const pointCountEl = document.getElementById('pointCount');
+        const btnUndo = document.getElementById('btnUndo');
+        const btnClose = document.getElementById('btnClose');
+        const btnClear = document.getElementById('btnClear');
+        const btnExport = document.getElementById('btnExport');
+        const btnCopy = document.getElementById('btnCopy');
+        const coordTooltip = document.getElementById('coordTooltip');
+        const hallListEl = document.getElementById('hallList');
+        const exportModal = document.getElementById('exportModal');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const toastEl = document.getElementById('toast');
+
+        // ===== INIT =====
+        mapImage.onload = () => {
+            canvas.width = mapImage.naturalWidth;
+            canvas.height = mapImage.naturalHeight;
+            canvas.style.width = mapImage.naturalWidth + 'px';
+            canvas.style.height = mapImage.naturalHeight + 'px';
+            mapImage.style.width = mapImage.naturalWidth + 'px';
+            mapImage.style.height = mapImage.naturalHeight + 'px';
+            loadFromStorage();
+            renderAll();
+        };
+
+        // Also handle cached images
+        if (mapImage.complete) {
+            canvas.width = mapImage.naturalWidth;
+            canvas.height = mapImage.naturalHeight;
+            canvas.style.width = mapImage.naturalWidth + 'px';
+            canvas.style.height = mapImage.naturalHeight + 'px';
+            mapImage.style.width = mapImage.naturalWidth + 'px';
+            mapImage.style.height = mapImage.naturalHeight + 'px';
+            loadFromStorage();
+            renderAll();
+        }
+
+        // ===== HALL SELECT CHANGE =====
+        hallSelect.addEventListener('change', () => {
+            const hallId = hallSelect.value;
+            // If this hall already has a saved polygon, load it into currentPoints
+            if (polygons[hallId] && polygons[hallId].length > 0) {
+                currentPoints = [...polygons[hallId]];
+            } else {
+                currentPoints = [];
+            }
+            renderAll();
+        });
+
+        // Initialize currentPoints from saved data for the first selected hall
+        function initCurrentHall() {
+            const hallId = hallSelect.value;
+            if (polygons[hallId] && polygons[hallId].length > 0) {
+                currentPoints = [...polygons[hallId]];
+            } else {
+                currentPoints = [];
+            }
+        }
+
+        // ===== CLICK: ADD POINT =====
+        mapContainer.addEventListener('click', (e) => {
+            if (e.target !== mapImage && e.target !== canvas) return;
+
+            const rect = mapImage.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            currentPoints.push({
+                x: Math.round(x * 100) / 100,
+                y: Math.round(y * 100) / 100
+            });
+
+            // Auto-save in progress
+            const hallId = hallSelect.value;
+            polygons[hallId] = [...currentPoints];
+            saveToStorage();
+            renderAll();
+        });
+
+        // ===== RIGHT-CLICK: CLOSE POLYGON =====
+        mapContainer.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            closePolygon();
+        });
+
+        // ===== MOUSE MOVE: COORDINATE TOOLTIP + PREVIEW LINE =====
+        mapContainer.addEventListener('mousemove', (e) => {
+            const rect = mapImage.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+            coordTooltip.style.display = 'block';
+            coordTooltip.style.left = (e.clientX + 16) + 'px';
+            coordTooltip.style.top = (e.clientY - 10) + 'px';
+            coordTooltip.textContent = `x: ${x.toFixed(2)}%  y: ${y.toFixed(2)}%`;
+
+            // Redraw with preview line to cursor
+            renderAll(x, y);
+        });
+
+        mapContainer.addEventListener('mouseleave', () => {
+            coordTooltip.style.display = 'none';
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault();
+                undoPoint();
+            }
+            if (e.key === 'Escape') {
+                clearCurrentHall();
+            }
+            if (e.key === 'Enter') {
+                closePolygon();
+            }
+        });
+
+        // ===== BUTTONS =====
+        btnUndo.addEventListener('click', undoPoint);
+        btnClose.addEventListener('click', closePolygon);
+        btnClear.addEventListener('click', clearCurrentHall);
+        btnExport.addEventListener('click', exportJSON);
+        btnCopy.addEventListener('click', copyToClipboard);
+
+        // ===== ACTIONS =====
+        function undoPoint() {
+            if (currentPoints.length === 0) return;
+            currentPoints.pop();
+            const hallId = hallSelect.value;
+            polygons[hallId] = [...currentPoints];
+            saveToStorage();
+            renderAll();
+        }
+
+        function closePolygon() {
+            if (currentPoints.length < 3) {
+                showToast('⚠️ Need at least 3 points to close a polygon!');
+                return;
+            }
+            const hallId = hallSelect.value;
+            polygons[hallId] = [...currentPoints];
+            saveToStorage();
+            showToast(`✅ ${HALL_COLORS[hallId].name} polygon saved! (${currentPoints.length} points)`);
+            renderAll();
+        }
+
+        function clearCurrentHall() {
+            const hallId = hallSelect.value;
+            currentPoints = [];
+            delete polygons[hallId];
+            saveToStorage();
+            renderAll();
+        }
+
+        function clearHall(hallId) {
+            if (hallId === hallSelect.value) {
+                currentPoints = [];
+            }
+            delete polygons[hallId];
+            saveToStorage();
+            renderAll();
+        }
+
+        function selectHall(hallId) {
+            hallSelect.value = hallId;
+            if (polygons[hallId] && polygons[hallId].length > 0) {
+                currentPoints = [...polygons[hallId]];
+            } else {
+                currentPoints = [];
+            }
+            renderAll();
+        }
+
+        // ===== EXPORT =====
+        function exportJSON() {
+            const output = {};
+            for (const [hallId, points] of Object.entries(polygons)) {
+                if (points && points.length >= 3) {
+                    output[hallId] = points;
+                }
+            }
+            jsonOutput.value = JSON.stringify(output, null, 2);
+            exportModal.classList.add('show');
+        }
+
+        function copyToClipboard() {
+            jsonOutput.select();
+            navigator.clipboard.writeText(jsonOutput.value).then(() => {
+                showToast('📋 JSON copied to clipboard!');
+            });
+        }
+
+        // ===== RENDER =====
+        function renderAll(cursorX, cursorY) {
+            if (!canvas.width) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const imgW = mapImage.naturalWidth;
+            const imgH = mapImage.naturalHeight;
+            const activeHall = hallSelect.value;
+
+            // 1. Draw all SAVED (completed) polygons except the active one
+            for (const [hallId, points] of Object.entries(polygons)) {
+                if (hallId === activeHall) continue; // draw active one separately
+                if (!points || points.length < 3) continue;
+
+                const color = HALL_COLORS[hallId] || { fill: 'rgba(128,128,128,0.2)', stroke: '#888' };
+
+                ctx.beginPath();
+                points.forEach((p, i) => {
+                    const px = (p.x / 100) * imgW;
+                    const py = (p.y / 100) * imgH;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+                ctx.closePath();
+                ctx.fillStyle = color.fill;
+                ctx.fill();
+                ctx.strokeStyle = color.stroke;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.stroke();
+
+                // Hall label at centroid
+                const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
+                const cy = points.reduce((s, p) => s + p.y, 0) / points.length;
+                ctx.font = 'bold 16px Inter, sans-serif';
+                ctx.fillStyle = color.stroke;
+                ctx.textAlign = 'center';
+                ctx.fillText(HALL_COLORS[hallId]?.name || hallId, (cx / 100) * imgW, (cy / 100) * imgH);
+            }
+
+            // 2. Draw the ACTIVE hall polygon (in-progress or completed)
+            const activeColor = HALL_COLORS[activeHall] || { fill: 'rgba(255,215,0,0.2)', stroke: '#FFD700' };
+
+            if (currentPoints.length > 0) {
+                ctx.beginPath();
+                currentPoints.forEach((p, i) => {
+                    const px = (p.x / 100) * imgW;
+                    const py = (p.y / 100) * imgH;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+
+                // If we have a cursor position, draw a preview line to it
+                if (cursorX !== undefined && cursorY !== undefined) {
+                    const curPx = (cursorX / 100) * imgW;
+                    const curPy = (cursorY / 100) * imgH;
+                    ctx.lineTo(curPx, curPy);
+                    // Also draw a dashed line from cursor back to first point
+                    ctx.strokeStyle = activeColor.stroke;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.stroke();
+
+                    // Dashed closing preview
+                    ctx.beginPath();
+                    ctx.moveTo(curPx, curPy);
+                    const firstPx = (currentPoints[0].x / 100) * imgW;
+                    const firstPy = (currentPoints[0].y / 100) * imgH;
+                    ctx.lineTo(firstPx, firstPy);
+                    ctx.strokeStyle = activeColor.stroke;
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([6, 4]);
+                    ctx.globalAlpha = 0.5;
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                    ctx.setLineDash([]);
+                } else {
+                    // No cursor — just draw the polyline
+                    if (currentPoints.length >= 3) {
+                        ctx.closePath();
+                        ctx.fillStyle = activeColor.fill;
+                        ctx.fill();
+                    }
+                    ctx.strokeStyle = activeColor.stroke;
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.stroke();
+                }
+
+                // Draw points
+                currentPoints.forEach((p, i) => {
+                    const px = (p.x / 100) * imgW;
+                    const py = (p.y / 100) * imgH;
+
+                    // Point circle
+                    ctx.beginPath();
+                    ctx.arc(px, py, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = activeColor.stroke;
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([]);
+                    ctx.stroke();
+
+                    // Point label
+                    ctx.font = 'bold 11px Inter, sans-serif';
+                    ctx.fillStyle = '#fff';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${i + 1}`, px, py - 14);
+                });
+            }
+
+            // 3. Update UI
+            updatePointCount();
+            updateSidePanel();
+        }
+
+        function updatePointCount() {
+            const count = currentPoints.length;
+            pointCountEl.innerHTML = `Points: <strong>${count}</strong>`;
+            btnUndo.disabled = count === 0;
+            btnClose.disabled = count < 3;
+        }
+
+        function updateSidePanel() {
+            const activeHall = hallSelect.value;
+            let html = '';
+
+            for (const [hallId, info] of Object.entries(HALL_COLORS)) {
+                const pts = hallId === activeHall ? currentPoints : (polygons[hallId] || []);
+                const isActive = hallId === activeHall;
+                const hasPolygon = pts.length >= 3;
+                const statusIcon = hasPolygon ? '✅' : (pts.length > 0 ? '🔨' : '⬜');
+
+                html += `
+                    <div class="hall-summary ${isActive ? 'active' : ''}" onclick="selectHall('${hallId}')">
+                        <div class="hall-name">
+                            <span class="color-dot" style="background:${info.stroke}"></span>
+                            ${statusIcon} ${info.name}
+                        </div>
+                        <div class="hall-points">
+                            ${hasPolygon
+                                ? `<strong>${pts.length} points</strong> — polygon complete`
+                                : pts.length > 0
+                                    ? `${pts.length} points — in progress...`
+                                    : 'No points yet'
+                            }
+                        </div>
+                        ${pts.length > 0 ? `
+                            <div class="hall-actions">
+                                <button class="btn btn-danger" onclick="event.stopPropagation(); clearHall('${hallId}')">🗑️ Clear</button>
+                                ${isActive && pts.length >= 3 ? `<button class="btn btn-primary" onclick="event.stopPropagation(); closePolygon()">✅ Close</button>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            hallListEl.innerHTML = html;
+        }
+
+        // ===== PERSISTENCE =====
+        function saveToStorage() {
+            try {
+                localStorage.setItem('polygon-marker-data', JSON.stringify(polygons));
+            } catch (e) { /* ignore */ }
+        }
+
+        function loadFromStorage() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('polygon-marker-data') || '{}');
+                for (const [key, val] of Object.entries(saved)) {
+                    if (Array.isArray(val)) {
+                        polygons[key] = val;
+                    }
+                }
+                initCurrentHall();
+            } catch (e) { /* ignore */ }
+        }
+
+        // ===== TOAST =====
+        function showToast(msg) {
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            setTimeout(() => toastEl.classList.remove('show'), 2500);
+        }
+    </script>
+</body>
+</html>

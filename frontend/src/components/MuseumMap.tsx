@@ -1,109 +1,263 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X, Eye, Lightbulb, Compass, MapPin } from 'lucide-react';
+import { X, Eye, Lightbulb, Compass, MapPin, Lock } from 'lucide-react';
 import { hallsData } from '../data/halls';
 import { artifactsData, type Artifact } from '../data/artifacts';
 import { useMuseum } from '../context/MuseumContext';
-
-// Define percentage-based bounds for each hall over the background image.
-// (top, left, width, height) in percentages.
-const HALL_ZONES: Record<string, { top: number, left: number, width: number, height: number }> = {
-    'grand-hall': { top: 75, left: 35, width: 30, height: 15 },
-    'grand-stairs': { top: 55, left: 35, width: 30, height: 20 },
-    'tutankhamun-galleries': { top: 20, left: 10, width: 35, height: 35 },
-    'main-galleries': { top: 20, left: 55, width: 35, height: 35 },
-    'khufu-s-boats': { top: 5, left: 60, width: 25, height: 15 },
-    'hanging-obelisk': { top: 85, left: 60, width: 20, height: 15 }
-};
+import { distributePointsInPolygon, getPolygonBounds } from '../utils/geometry';
 
 const MuseumMap = () => {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
-    const { viewedArtifacts } = useMuseum();
+    const { viewedArtifacts, isHallUnlocked, isHallComplete } = useMuseum();
     const isAr = i18n.language === 'ar';
 
     const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
+    const [hoveredHall, setHoveredHall] = useState<string | null>(null);
+
+    // Pre-compute artifact positions inside their hall polygons
+    const artifactPositions = useMemo(() => {
+        const positions: Record<string, { x: number; y: number }> = {};
+
+        for (const hall of hallsData) {
+            if (!hall.polygon || hall.polygon.length < 3) continue;
+
+            const hallArtifacts = hall.artifactIds;
+            const distributed = distributePointsInPolygon(hall.polygon, hallArtifacts.length, 2);
+
+            hallArtifacts.forEach((artifactId, i) => {
+                if (distributed[i]) {
+                    positions[artifactId] = distributed[i];
+                }
+            });
+        }
+
+        // Special override: Ramesses statue stays at the entrance
+        positions['colossal-statue-of-ramesses-ii'] = { x: 48, y: 88 };
+
+        return positions;
+    }, []);
 
     return (
-        <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto py-6">
-            <div className="text-center mb-4">
-                <h2 className="text-4xl font-bold text-amber-900 mb-2">
-                    {t('mapWelcome', 'Interactive Museum Map')}
-                </h2>
-                <p className="text-gray-600">
-                    {t('mapInstruction', 'Click on the artifact pins on the map to explore the pieces!')}
-                </p>
-            </div>
+        <div className="flex flex-col gap-6 w-full mx-auto py-6">
 
+            {/* ====== MAP + DETAIL LAYOUT ====== */}
             <div className="flex flex-col lg:flex-row gap-6">
 
                 {/* ====== LEFT: INTERACTIVE IMAGE MAP ====== */}
-                <div className="relative flex-1 lg:max-w-[65%] w-full rounded-3xl p-4 flex items-center justify-center bg-white/50 backdrop-blur-sm border-2 border-white shadow-[0_0_40px_rgba(251,191,36,0.15)]">
-                    <img
-                        src="/images/user_museum_map.png"
-                        alt="Egyptian Museum Map"
-                        className="w-full h-auto object-contain block drop-shadow-2xl"
-                    />
+                <div
+                    className="relative flex-1 w-full rounded-2xl overflow-auto"
+                    style={{ maxHeight: '85vh' }}
+                >
+                    <div className="relative inline-block" style={{ minWidth: '1400px' }}>
+                        {/* Map Image */}
+                        <img
+                            src="/images/museum_map.png"
+                            alt="Egyptian Museum Map"
+                            className="block w-full h-auto select-none"
+                            draggable={false}
+                        />
 
-                    {/* OVERLAYS FOR THE ARTIFACTS */}
-                    {hallsData.map((hall) => {
-                        const zone = HALL_ZONES[hall.id] || { top: 10, left: 10, width: 10, height: 10 };
-                        const hallArtifacts = hall.artifactIds.map(id => artifactsData.find(a => a.id === id)).filter(Boolean) as Artifact[];
+                        {/* ====== SVG OVERLAY LAYER ====== */}
+                        <svg
+                            className="absolute inset-0 w-full h-full"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                            style={{ pointerEvents: 'none' }}
+                        >
+                            <defs>
+                                {/* Fog blur filter */}
+                                <filter id="fog-blur" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="0.8" />
+                                </filter>
+                                {/* Fog turbulence for smoky effect */}
+                                <filter id="fog-smoke" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" result="noise" />
+                                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
+                                    <feGaussianBlur stdDeviation="0.5" />
+                                </filter>
+                            </defs>
 
-                        // Calculate grid/distribution within the zone
-                        const count = hallArtifacts.length;
-                        const cols = Math.ceil(Math.sqrt(count)) || 1;
+                            {/* Fog overlays for LOCKED halls */}
+                            {hallsData.map((hall) => {
+                                if (isHallUnlocked(hall.id)) return null;
+                                if (!hall.polygon || hall.polygon.length < 3) return null;
 
-                        return hallArtifacts.map((artifact, index) => {
-                            // Specific override requested by user:
-                            // "put the status of ramsus in the entrance and put it flow on the small put"
-                            let topPos = zone.top + ((Math.floor(index / cols) + 1) * (zone.height / (Math.ceil(count / cols) + 1)));
-                            let leftPos = zone.left + (((index % cols) + 1) * (zone.width / (cols + 1)));
+                                const points = hall.polygon
+                                    .map(p => `${p.x},${p.y}`)
+                                    .join(' ');
 
-                            if (artifact.id === 'colossal-statue-of-ramesses-ii') {
-                                // Entrance coordinates (e.g. bottom center)
-                                topPos = 88;
-                                leftPos = 48;
-                            }
+                                return (
+                                    <g key={`fog-${hall.id}`}>
+                                        {/* Dark fog layer */}
+                                        <polygon
+                                            points={points}
+                                            fill="rgba(0, 0, 0, 0.75)"
+                                            filter="url(#fog-blur)"
+                                            className="fog-polygon"
+                                        />
+                                        {/* Smoky texture layer */}
+                                        <polygon
+                                            points={points}
+                                            fill="rgba(10, 5, 20, 0.5)"
+                                            filter="url(#fog-smoke)"
+                                            className="fog-polygon"
+                                        />
+                                    </g>
+                                );
+                            })}
 
-                            const isSelected = selectedArtifact?.id === artifact.id;
-                            const isViewed = viewedArtifacts.includes(artifact.id);
+                            {/* Hall outline highlights on hover */}
+                            {hallsData.map((hall) => {
+                                if (!isHallUnlocked(hall.id)) return null;
+                                if (!hall.polygon || hall.polygon.length < 3) return null;
+
+                                const points = hall.polygon
+                                    .map(p => `${p.x},${p.y}`)
+                                    .join(' ');
+
+                                const isHovered = hoveredHall === hall.id;
+
+                                return (
+                                    <polygon
+                                        key={`outline-${hall.id}`}
+                                        points={points}
+                                        fill={isHovered ? `${hall.color}15` : 'transparent'}
+                                        stroke={isHovered ? hall.color : 'transparent'}
+                                        strokeWidth="0.3"
+                                        style={{
+                                            transition: 'all 0.3s ease',
+                                            pointerEvents: 'visiblePainted',
+                                            cursor: 'pointer',
+                                        }}
+                                        onMouseEnter={() => setHoveredHall(hall.id)}
+                                        onMouseLeave={() => setHoveredHall(null)}
+                                    />
+                                );
+                            })}
+                        </svg>
+
+                        {/* ====== LOCK ICONS for locked halls ====== */}
+                        {hallsData.map((hall) => {
+                            if (isHallUnlocked(hall.id)) return null;
+                            if (!hall.polygon || hall.polygon.length < 3) return null;
+
+                            const bounds = getPolygonBounds(hall.polygon);
+                            const prevHall = hallsData.find(h => h.id === hall.prerequisiteHallId);
+                            const prevName = prevHall
+                                ? (isAr ? prevHall.nameAr : prevHall.name)
+                                : '';
 
                             return (
                                 <div
-                                    key={artifact.id}
-                                    onClick={() => setSelectedArtifact(artifact)}
-                                    className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10 transition-transform duration-300 ${isSelected ? 'scale-125 z-50' : 'hover:scale-125 hover:z-40'}`}
-                                    style={{ top: `${topPos}%`, left: `${leftPos}%` }}
+                                    key={`lock-${hall.id}`}
+                                    className="absolute flex flex-col items-center gap-1 pointer-events-none select-none"
+                                    style={{
+                                        top: `${bounds.centerY}%`,
+                                        left: `${bounds.centerX}%`,
+                                        transform: 'translate(-50%, -50%)',
+                                        zIndex: 30,
+                                    }}
                                 >
-                                    {/* Map Pin / Image Thumbnail */}
-                                    <div className={`relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 shadow-lg ${isSelected ? 'border-amber-500 shadow-amber-500/50' : 'border-white'}`}>
-                                        <img
-                                            src={artifact.image}
-                                            alt={artifact.name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-
-                                        {/* Viewed Checkmark */}
-                                        {isViewed && (
-                                            <div className="absolute -top-1 -right-1 bg-green-500 rounded-full w-4 h-4 flex items-center justify-center border border-white">
-                                                <span className="text-white text-[8px] font-bold">✓</span>
-                                            </div>
-                                        )}
+                                    <div className="w-12 h-12 rounded-full bg-black/70 backdrop-blur-sm border-2 border-amber-500/40 flex items-center justify-center shadow-lg shadow-black/50 fog-pulse">
+                                        <Lock size={20} className="text-amber-400" />
                                     </div>
-
-                                    {/* Tooltip on Hover */}
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[120px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gray-900/90 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-lg text-center shadow-xl">
-                                        {isAr ? artifact.nameAr : artifact.name}
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/90" />
+                                    <div className="bg-black/80 backdrop-blur-sm text-center rounded-lg px-3 py-1.5 border border-amber-500/20 shadow-lg">
+                                        <p className="text-amber-400 text-xs font-bold">
+                                            {hall.icon} {isAr ? hall.nameAr : hall.name}
+                                        </p>
+                                        <p className="text-gray-400 text-[10px] mt-0.5">
+                                            {t('completePrevious', `Complete "${prevName}" to unlock`)}
+                                        </p>
                                     </div>
                                 </div>
                             );
-                        });
-                    })}
+                        })}
+
+                        {/* ====== ARTIFACT PINS for unlocked halls ====== */}
+                        {hallsData.map((hall) => {
+                            if (!isHallUnlocked(hall.id)) return null;
+
+                            const hallArtifacts = hall.artifactIds
+                                .map(id => artifactsData.find(a => a.id === id))
+                                .filter(Boolean) as Artifact[];
+
+                            return hallArtifacts.map((artifact) => {
+                                const pos = artifactPositions[artifact.id];
+                                if (!pos) return null;
+
+                                const isSelected = selectedArtifact?.id === artifact.id;
+                                const isViewed = viewedArtifacts.includes(artifact.id);
+
+                                return (
+                                    <div
+                                        key={artifact.id}
+                                        onClick={() => setSelectedArtifact(artifact)}
+                                        className={`absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group transition-transform duration-300 ${isSelected ? 'scale-125 z-50' : 'hover:scale-125 hover:z-40'}`}
+                                        style={{
+                                            top: `${pos.y}%`,
+                                            left: `${pos.x}%`,
+                                            zIndex: isSelected ? 50 : 10,
+                                        }}
+                                    >
+                                        {/* Pin thumbnail */}
+                                        <div className={`relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border-2 shadow-lg transition-all duration-200 ${isSelected ? 'border-amber-500 shadow-amber-500/50 ring-2 ring-amber-400/30' : isViewed ? 'border-green-400 shadow-green-400/30' : 'border-white/80 shadow-black/40'}`}>
+                                            <img
+                                                src={artifact.image}
+                                                alt={artifact.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+
+                                            {/* Viewed checkmark */}
+                                            {isViewed && (
+                                                <div className="absolute -top-1 -right-1 bg-green-500 rounded-full w-4 h-4 flex items-center justify-center border border-white">
+                                                    <span className="text-white text-[8px] font-bold">✓</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Tooltip on hover */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-[140px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none bg-gray-900/95 text-white text-[10px] sm:text-xs font-semibold px-3 py-1.5 rounded-lg text-center shadow-xl border border-white/10">
+                                            {isAr ? artifact.nameAr : artifact.name}
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900/95" />
+                                        </div>
+                                    </div>
+                                );
+                            });
+                        })}
+
+                        {/* ====== HALL NAME LABELS for unlocked halls ====== */}
+                        {hallsData.map((hall) => {
+                            if (!isHallUnlocked(hall.id)) return null;
+                            if (!hall.polygon || hall.polygon.length < 3) return null;
+
+                            const bounds = getPolygonBounds(hall.polygon);
+                            const complete = isHallComplete(hall.id);
+
+                            return (
+                                <div
+                                    key={`label-${hall.id}`}
+                                    className="absolute pointer-events-none select-none"
+                                    style={{
+                                        top: `${bounds.minY + 2}%`,
+                                        left: `${bounds.centerX}%`,
+                                        transform: 'translateX(-50%)',
+                                        zIndex: 5,
+                                    }}
+                                >
+                                    <div className="bg-black/50 backdrop-blur-sm text-center rounded-md px-2 py-1 border border-white/10">
+                                        <p className="text-[10px] font-bold" style={{ color: hall.color }}>
+                                            {hall.icon} {isAr ? hall.nameAr : hall.name}
+                                            {complete && ' ✅'}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* ====== RIGHT: DETAIL PANEL ====== */}
@@ -203,6 +357,28 @@ const MuseumMap = () => {
                                 <p className="text-gray-500 text-sm leading-relaxed max-w-[240px]">
                                     {t('mapInstruction', 'Click on any interactive artifact pin on the map to uncover its history.')}
                                 </p>
+
+                                {/* Unlock Progress */}
+                                <div className="mt-6 w-full max-w-[260px]">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                        {t('unlockProgress', 'Hall Progress')}
+                                    </p>
+                                    {hallsData
+                                        .sort((a, b) => a.unlockOrder - b.unlockOrder)
+                                        .map((hall) => {
+                                            const unlocked = isHallUnlocked(hall.id);
+                                            const complete = isHallComplete(hall.id);
+                                            return (
+                                                <div
+                                                    key={hall.id}
+                                                    className={`flex items-center gap-2 py-1.5 text-xs font-medium ${unlocked ? (complete ? 'text-green-600' : 'text-amber-600') : 'text-gray-300'}`}
+                                                >
+                                                    <span>{complete ? '✅' : unlocked ? '🔓' : '🔒'}</span>
+                                                    <span>{hall.icon} {isAr ? hall.nameAr : hall.name}</span>
+                                                </div>
+                                            );
+                                        })}
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
