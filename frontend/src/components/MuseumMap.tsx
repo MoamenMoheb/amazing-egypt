@@ -9,7 +9,6 @@ import { distributePointsInPolygon, getPolygonBounds } from '../utils/geometry';
 import { getAssetUrl } from '../utils/getAssetUrl';
 
 const MuseumMap = () => {
-    const navigate = useNavigate();
     const { t, i18n } = useTranslation();
     const { viewedArtifacts, isHallUnlocked, isHallComplete } = useMuseum();
     const isAr = i18n.language === 'ar';
