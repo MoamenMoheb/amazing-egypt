@@ -1,8 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X, Eye, Lightbulb, Compass, Lock } from 'lucide-react';
+import { X, Lightbulb, Lock } from 'lucide-react';
 import { hallsData } from '../data/halls';
 import { artifactsData, type Artifact } from '../data/artifacts';
 import { useMuseum } from '../context/MuseumContext';
@@ -506,29 +505,6 @@ const MuseumMap = () => {
                                     <p className="text-base text-gray-300 leading-relaxed font-medium">
                                         {isAr ? selectedArtifact.descriptionAr : selectedArtifact.description}
                                     </p>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex flex-col gap-3 pt-2">
-                                    <motion.button
-                                        onClick={() => navigate(`/artifact/${selectedArtifact.id}`)}
-                                        className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold hover:from-amber-700 hover:to-amber-600 transition shadow-lg shadow-amber-600/30"
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Eye size={18} />
-                                        <span>{t('exploreMore', 'View Full Details')}</span>
-                                    </motion.button>
-
-                                    <motion.button
-                                        onClick={() => navigate(`/hall/${selectedArtifact.hallId}`)}
-                                        className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-white/5 text-gray-200 font-bold hover:bg-white/10 border border-white/10 transition"
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
-                                    >
-                                        <Compass size={18} className="text-gray-400" />
-                                        <span>{t('backToHall', 'Go To Hall')}</span>
-                                    </motion.button>
                                 </div>
                             </div>
                         </motion.div>
