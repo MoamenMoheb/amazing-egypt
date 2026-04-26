@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Character from '../components/Character';
 import BadgeProgress from '../components/BadgeProgress';
 import BadgeDisplay from '../components/BadgeDisplay';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ const Home = () => {
                     className="mb-1"
                 >
                     <img 
-                        src="/images/logo.png" 
+                        src={getAssetUrl('/images/logo.png')} 
                         alt="Amazing Egypt Logo" 
                         className="h-32 md:h-40 w-auto object-contain drop-shadow-xl"
                     />

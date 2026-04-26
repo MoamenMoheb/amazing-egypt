@@ -8,6 +8,7 @@ import { hallsData } from '../data/halls';
 import { useMuseum } from '../context/MuseumContext';
 import Character from '../components/Character';
 import DidYouKnow from '../components/DidYouKnow';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
 const ArtifactDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -71,7 +72,7 @@ const ArtifactDetail = () => {
                     {/* Image */}
                     <div className="relative h-64 md:h-96">
                         <img
-                            src={artifact.image}
+                            src={getAssetUrl(artifact.image)}
                             alt={isAr ? artifact.nameAr : artifact.name}
                             className="w-full h-full object-cover"
                         />

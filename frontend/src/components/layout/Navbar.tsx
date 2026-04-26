@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useMascot } from '../../context/MascotContext';
+import { getAssetUrl } from '../../utils/getAssetUrl';
 
 const Navbar = () => {
     const { triggerReaction } = useMascot();
@@ -19,7 +20,7 @@ const Navbar = () => {
                     onPointerLeave={() => triggerReaction('idle')}
                 >
                     <img 
-                        src="/gemkids-logo-new.png" 
+                        src={getAssetUrl('/gemkids-logo-new.png')} 
                         alt="GEM Kids" 
                         className="h-[320px] md:h-[448px] lg:h-[576px] w-auto max-w-[95vw] object-contain drop-shadow-[0_0_20px_rgba(255,215,0,0.6)] hover:drop-shadow-[0_0_35px_rgba(255,215,0,0.9)] transition-all duration-300 transform hover:scale-105" 
                     />

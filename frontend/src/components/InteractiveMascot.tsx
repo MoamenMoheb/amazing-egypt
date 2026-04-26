@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
-const MASCOT_IMG = '/character/static-mascot.jpg';
+const MASCOT_IMG = getAssetUrl('/character/static-mascot.jpg');
 
 // Predefined helpful responses for the virtual assistant
 const RESPONSES: Record<string, string[]> = {

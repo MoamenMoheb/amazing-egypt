@@ -1,18 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useMascot } from '../context/MascotContext';
+import { useTranslation } from 'react-i18next';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
-
+type CharacterMood = 'idle' | 'welcome' | 'pointing' | 'celebration' | 'confused' | 'thinking' | 'idea' | 'speaking';
 
 const REACTION_IMAGES: Record<string, string> = {
-    idle: '/character/New-Mascot1.png',
-    welcome: '/character/New-Mascot3.png',
-    pointing: '/character/New-Mascot5.png',
-    celebration: '/character/New-Mascot7.png',
-    confused: '/character/New-Mascot9.png',
-    thinking: '/character/New-Mascot11.png',
-    idea: '/character/New-Mascot8.png',
-    speaking: '/character/New-Mascot1.png',
+    idle: getAssetUrl('/character/New-Mascot1.png'),
+    welcome: getAssetUrl('/character/New-Mascot3.png'),
+    pointing: getAssetUrl('/character/New-Mascot5.png'),
+    celebration: getAssetUrl('/character/New-Mascot7.png'),
+    confused: getAssetUrl('/character/New-Mascot9.png'),
+    thinking: getAssetUrl('/character/New-Mascot11.png'),
+    idea: getAssetUrl('/character/New-Mascot8.png'),
+    speaking: getAssetUrl('/character/New-Mascot1.png'),
 };
 
 interface CharacterProps {
@@ -207,8 +209,8 @@ const Character = ({
                             className="w-full h-full object-contain relative z-10"
                             style={{ mixBlendMode: 'screen' }}
                         >
-                            <source src="/character/speaking.webm" type="video/webm" />
-                            <source src="/character/speaking.mp4" type="video/mp4" />
+                            <source src={getAssetUrl('/character/speaking.webm')} type="video/webm" />
+                            <source src={getAssetUrl('/character/speaking.mp4')} type="video/mp4" />
                         </video>
                     </motion.div>
                 ) : (

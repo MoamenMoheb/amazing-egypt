@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { hallsData } from '../data/halls';
 import { useMuseum } from '../context/MuseumContext';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
 const Halls = () => {
     const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Halls = () => {
                                 <div className="flex items-center justify-between mb-4">
                                     <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shadow-lg bg-gradient-to-br ${hall.gradient} overflow-hidden`}>
                                         {hall.image ? (
-                                            <img src={hall.image} alt={hall.nameAr} className="w-full h-full object-cover" />
+                                            <img src={getAssetUrl(hall.image)} alt={hall.nameAr} className="w-full h-full object-cover" />
                                         ) : (
                                             hall.icon
                                         )}

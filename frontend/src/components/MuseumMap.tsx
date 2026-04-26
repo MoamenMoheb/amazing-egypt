@@ -7,6 +7,7 @@ import { hallsData } from '../data/halls';
 import { artifactsData, type Artifact } from '../data/artifacts';
 import { useMuseum } from '../context/MuseumContext';
 import { distributePointsInPolygon, getPolygonBounds } from '../utils/geometry';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
 const MuseumMap = () => {
     const navigate = useNavigate();
@@ -65,7 +66,7 @@ const MuseumMap = () => {
             <div className="relative inline-block" style={{ minWidth: '2200px' }}>
                 {/* Map Image */}
                 <img
-                    src="/images/museum_map.png"
+                    src={getAssetUrl('/images/museum_map.png')}
                     alt="Egyptian Museum Map"
                     className="block w-full h-auto select-none"
                     draggable={false}
@@ -332,7 +333,7 @@ const MuseumMap = () => {
                                                 {/* Thumbnail */}
                                                 <div className="w-full h-[100px] overflow-hidden">
                                                     <img
-                                                        src={artifact.image}
+                                                        src={getAssetUrl(artifact.image)}
                                                         alt={isAr ? artifact.nameAr : artifact.name}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -428,7 +429,7 @@ const MuseumMap = () => {
                             {/* Hero Image — zoomed in */}
                             <div className="relative h-64 sm:h-72 overflow-hidden">
                                 <motion.img
-                                    src={selectedArtifact.image}
+                                    src={getAssetUrl(selectedArtifact.image)}
                                     alt={isAr ? selectedArtifact.nameAr : selectedArtifact.name}
                                     className="w-full h-full object-cover"
                                     initial={{ scale: 1.3 }}

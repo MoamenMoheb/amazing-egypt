@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getAssetUrl } from '../utils/getAssetUrl';
 
 const MascotGuide = () => {
     const [showMessage, setShowMessage] = useState(true);
@@ -41,7 +42,7 @@ const MascotGuide = () => {
                     className="w-full h-full"
                 >
                     <img
-                        src="/character/New-Mascot1.png"
+                        src={getAssetUrl('/character/New-Mascot1.png')}
                         alt="Museum Mascot"
                         className="w-full h-full object-contain filter drop-shadow-lg"
                         draggable={false}
