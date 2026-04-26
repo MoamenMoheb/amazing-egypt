@@ -17,7 +17,6 @@ const MuseumMap = () => {
 
     const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
     const [hoveredArtifact, setHoveredArtifact] = useState<Artifact | null>(null);
-    const [hoveredHall, setHoveredHall] = useState<string | null>(null);
     const mapContainerRef = useRef<HTMLDivElement>(null);
 
     // Pre-compute artifact positions inside their hall polygons
@@ -103,17 +102,17 @@ const MuseumMap = () => {
 
                         return (
                             <g key={`fog-${hall.id}`}>
-                                {/* Dark fog layer */}
+                                {/* Dark fog layer — nearly opaque */}
                                 <polygon
                                     points={points}
-                                    fill="rgba(0, 0, 0, 0.75)"
+                                    fill="rgba(0, 0, 0, 0.95)"
                                     filter="url(#fog-blur)"
                                     className="fog-polygon"
                                 />
                                 {/* Smoky texture layer */}
                                 <polygon
                                     points={points}
-                                    fill="rgba(10, 5, 20, 0.5)"
+                                    fill="rgba(5, 2, 10, 0.7)"
                                     filter="url(#fog-smoke)"
                                     className="fog-polygon"
                                 />
@@ -121,34 +120,7 @@ const MuseumMap = () => {
                         );
                     })}
 
-                    {/* Hall outline highlights on hover */}
-                    {hallsData.map((hall) => {
-                        if (!isHallUnlocked(hall.id)) return null;
-                        if (!hall.polygon || hall.polygon.length < 3) return null;
-
-                        const points = hall.polygon
-                            .map(p => `${p.x},${p.y}`)
-                            .join(' ');
-
-                        const isHovered = hoveredHall === hall.id;
-
-                        return (
-                            <polygon
-                                key={`outline-${hall.id}`}
-                                points={points}
-                                fill={isHovered ? `${hall.color}15` : 'transparent'}
-                                stroke={isHovered ? hall.color : 'transparent'}
-                                strokeWidth="0.3"
-                                style={{
-                                    transition: 'all 0.3s ease',
-                                    pointerEvents: 'visiblePainted',
-                                    cursor: 'pointer',
-                                }}
-                                onMouseEnter={() => setHoveredHall(hall.id)}
-                                onMouseLeave={() => setHoveredHall(null)}
-                            />
-                        );
-                    })}
+                    {/* Hall outlines removed — no visible boundaries */}
 
                     {/* ====== SPOTLIGHT FADE: darken all halls except the selected one ====== */}
                     {selectedArtifact && hallsData.map((hall) => {
@@ -417,9 +389,12 @@ const MuseumMap = () => {
                             transition={{ type: 'spring', damping: 28, stiffness: 350 }}
                             className="fixed z-[70] w-[92vw] max-w-[440px] max-h-[88vh] overflow-y-auto rounded-3xl shadow-2xl"
                             style={{
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                margin: 'auto',
+                                height: 'fit-content',
                                 background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%)',
                                 border: '1px solid rgba(255, 215, 0, 0.25)',
                                 boxShadow: '0 0 60px rgba(255,215,0,0.12), 0 25px 50px rgba(0,0,0,0.5)',
