@@ -237,7 +237,7 @@ const MuseumMap = () => {
                                     {hall.icon} {isAr ? hall.nameAr : hall.name}
                                 </p>
                                 <p className="text-gray-400 text-[10px] mt-0.5">
-                                    {t('completePrevious', `Complete "${prevName}" to unlock`)}
+                                    {t('completePrevious', { defaultValue: 'Complete "{{prevName}}" to unlock', prevName })}
                                 </p>
                             </div>
                         </div>
@@ -308,7 +308,7 @@ const MuseumMap = () => {
                                 />
 
                                 {/* Viewed checkmark — small dot */}
-                                {isViewed && !isSelected && (
+                                {isViewed && (
                                     <div
                                         className="absolute flex items-center justify-center"
                                         style={{
@@ -322,6 +322,7 @@ const MuseumMap = () => {
                                             fontSize: '7px',
                                             color: 'white',
                                             fontWeight: 'bold',
+                                            zIndex: 2, // Ensure it sits above the diamond
                                         }}
                                     >
                                         ✓
