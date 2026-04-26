@@ -14,7 +14,7 @@ function App() {
   return (
     <MuseumProvider>
       <MascotProvider>
-        <Router>
+        <Router basename={import.meta.env.BASE_URL}>
           <div className="min-h-screen font-sans text-gray-800">
             <BackgroundMusic />
             <main>

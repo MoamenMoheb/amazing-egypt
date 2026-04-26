@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
+  base: '/amazing-egypt/',
   plugins: [react()],
   server: {
     host: true, // same as 0.0.0.0
