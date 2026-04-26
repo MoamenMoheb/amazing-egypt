@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🗺️ Draggable Artifact Position Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #111; font-family: 'Segoe UI', sans-serif; overflow: auto; }
+    .controls {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(0,0,0,0.95); backdrop-filter: blur(10px);
+      padding: 8px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      border-bottom: 2px solid #FFD700;
+    }
+    .controls label { color: #FFD700; font-weight: bold; font-size: 12px; cursor: pointer; }
+    .controls input[type="range"] { width: 100px; }
+    .controls span { color: #ccc; font-size: 11px; }
+    .controls button {
+      background: #FFD700; color: #111; border: none; padding: 5px 12px;
+      border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px;
+    }
+    .controls button:hover { background: #e6c200; }
+    .controls button.export-btn { background: #4CAF50; color: white; }
+    .controls button.export-btn:hover { background: #388E3C; }
+    .controls .changed-count { color: #FF5722; font-size: 11px; font-weight: bold; }
+    #map-wrapper { position: relative; display: inline-block; margin-top: 44px; }
+    #map-wrapper img { display: block; width: 100%; height: auto; user-select: none; }
+    .artifact-circle {
+      position: absolute; border-radius: 50%; border: 3px solid;
+      transform: translate(-50%, -50%); cursor: grab; z-index: 10;
+    }
+    .artifact-circle.dragging { cursor: grabbing; z-index: 200 !important; opacity: 0.8; }
+    .artifact-circle.moved { border-style: dashed; }
+    .circle-label {
+      position: absolute; bottom: calc(100% + 4px); left: 50%;
+      transform: translateX(-50%); background: rgba(0,0,0,0.92); color: white;
+      font-size: 8px; padding: 3px 6px; border-radius: 4px; white-space: nowrap;
+      pointer-events: none; border: 1px solid rgba(255,215,0,0.3); font-weight: bold;
+      max-width: 180px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hall-polygon { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .legend {
+      position: fixed; bottom: 10px; left: 10px; z-index: 200;
+      background: rgba(0,0,0,0.9); border-radius: 10px; padding: 10px;
+      border: 1px solid #FFD700; max-height: 200px; overflow-y: auto;
+    }
+    .legend h4 { color: #FFD700; font-size: 11px; margin-bottom: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid; }
+    .legend-text { color: #ccc; font-size: 10px; }
+    #coord-display {
+      position: fixed; bottom: 10px; right: 10px; z-index: 200;
+      background: rgba(0,0,0,0.9); border-radius: 8px; padding: 8px 14px;
+      border: 1px solid #FFD700; color: #FFD700; font-size: 12px; font-family: monospace;
+    }
+    /* Export modal */
+    #export-modal {
+      display: none; position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
+      justify-content: center; align-items: center;
+    }
+    #export-modal.show { display: flex; }
+    #export-modal .modal-box {
+      background: #1a1a2e; border: 2px solid #FFD700; border-radius: 16px;
+      padding: 20px; width: 90vw; max-width: 700px; max-height: 80vh;
+    }
+    #export-modal h3 { color: #FFD700; margin-bottom: 10px; font-size: 16px; }
+    #export-modal textarea {
+      width: 100%; height: 400px; background: #111; color: #4CAF50; border: 1px solid #333;
+      border-radius: 8px; padding: 10px; font-family: monospace; font-size: 11px; resize: vertical;
+    }
+    #export-modal .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+    #export-modal button { padding: 8px 16px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <label>Size: <input type="range" id="circleSize" min="10" max="80" value="26"></label>
+    <span id="circleSizeVal">26px</span>
+    <label><input type="checkbox" id="showLabels" checked> Labels</label>
+    <label><input type="checkbox" id="showPolygons" checked> Polygons</label>
+    <button onclick="resetPositions()">Reset Positions</button>
+    <button class="export-btn" onclick="showExport()">📋 Export Positions</button>
+    <span class="changed-count" id="changedCount"></span>
+  </div>
+
+  <div id="map-wrapper">
+    <img src="/images/museum_map.png" alt="Museum Map" id="mapImage" draggable="false">
+    <svg class="hall-polygon" id="hallPolygonsSvg" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+    <div id="circles-container"></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <div id="coord-display">Drag circles to reposition</div>
+
+  <div id="export-modal">
+    <div class="modal-box">
+      <h3>📋 Exported Artifact Positions (paste into MuseumMap.tsx)</h3>
+      <textarea id="export-text" readonly></textarea>
+      <div class="modal-actions">
+        <button style="background:#4CAF50;color:white;" onclick="copyExport()">📋 Copy</button>
+        <button style="background:#555;color:white;" onclick="closeExport()">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const hallsData = [
+  { id:"grand-hall", name:"Grand Hall", color:"#FFD700",
+    polygon:[{x:57.07,y:95.13},{x:40.45,y:74.3},{x:67.16,y:51.12},{x:76.32,y:76.51},{x:75.97,y:87.06},{x:79.38,y:95.26}],
+    artifactIds:["colossal-statue-of-ramesses-ii","colossus-of-a-ptolemaic-king","colossus-of-a-ptolemaic-queen","column-of-king-merenptah","seated-statue-of-senwosert-i"]},
+  { id:"grand-stairs", name:"Grand Stairs", color:"#1E90FF",
+    polygon:[{x:40.17,y:74.19},{x:67.09,y:50.89},{x:58.42,y:23.15},{x:43.3,y:23.28},{x:43.22,y:25.76},{x:10.3,y:25.23},{x:10.23,y:34.35}],
+    artifactIds:["colossal-osiride-statue-of-king-senwosret-i","doorway-of-king-amenemhat-i","hathor-capital","king-ramesses-ii-and-a-goddess","pyramidion-of-an-obelisk-of-queen-hatshepsut","sarcophagus-of-djehutymose","sarcophagus-of-nitocris","seated-statue-of-goddess-sekhmet","seated-statue-of-thutmose-iii","sphinx-of-king-amenemhat-iii","sphinx-of-kings-ramesses-ii-and-merenptah","standing-statue-of-king-thutmose-iii","statue-of-god-ptah-king-ramesses-ii-goddess-sekhmet","statue-of-queen-hatshepsut"]},
+  { id:"hanging-obelisk", name:"Hanging Obelisk", color:"#E91E63",
+    polygon:[{x:5.33,y:0.13},{x:5.26,y:16.28},{x:7.95,y:26.17},{x:10.16,y:26.17},{x:10.16,y:34.11},{x:56.89,y:95.52},{x:0,y:95.52},{x:0.07,y:0.13}],
+    artifactIds:["obelisk","untitled-2"]},
+  { id:"khufu-s-boats", name:"Khufu's Boats", color:"#8B4513",
+    polygon:[{x:70,y:58.8},{x:99.83,y:58.28},{x:99.83,y:95.39},{x:78.95,y:95.39}],
+    artifactIds:["khufu-s-boats","pyramid-area-boats-egyptatours"]},
+  { id:"main-galleries", name:"Main Galleries", color:"#4CAF50",
+    polygon:[{x:59.42,y:24.84},{x:99.55,y:24.58},{x:99.76,y:58.05},{x:70.14,y:57.92}],
+    artifactIds:["a-cup-treasure-of-tod","a-gilt-hawk-figure-dendera-treasure-hoards","a-statue-of-duaptah-and-his-father","a-string-with-carnelian-beads-treasure-of-tod","amulet-treasure-of-tod","beaker-with-river-nile-scene","block-statue-of-penuuepeqer","block-statue-of-sobeknakht","block-statue-of-wsirwer","bronze-vase-of-mesehti","canopic-chest-of-queen-hetepheres-i","carrying-chair-of-queen-hetepheres-i"]},
+  { id:"tutankhamun-galleries", name:"Tutankhamun Galleries", color:"#9C27B0",
+    polygon:[{x:5.47,y:0.13},{x:5.4,y:15.89},{x:8.17,y:26.3},{x:99.83,y:24.09},{x:99.9,y:0.26}],
+    artifactIds:["anubis-on-a-chest","canopic-chest","canopic-coffinette-2","canopic-coffinette-3","canopic-coffinette-4","canopic-coffinette","canopic-shrine-on-a-sledge","cow-head","duck-head-earrings","fancy-perfume-vase","festival-earrings","floral-hair-box","golden-throne","guardian-statue-with-khat-headdress","guardian-statue-with-nemes-headcloth","ivory-jewellery-box","lion-shaped-perfume-jar","lions-headrest","lotus-cup","model-of-tutankhamun-on-a-funerary-bed","ostrich-hunt-fan","outer-coffin","ritual-carrying-box","royal-diadem","the-golden-burial-mask-of-tutankhamun"]},
+];
+
+function isPointInPolygon(pt, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x, yi = poly[i].y, xj = poly[j].x, yj = poly[j].y;
+    if (((yi > pt.y) !== (yj > pt.y)) && (pt.x < (xj-xi)*(pt.y-yi)/(yj-yi)+xi)) inside = !inside;
+  }
+  return inside;
+}
+function getPolygonBounds(poly) {
+  let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
+  for (const p of poly) { mnX=Math.min(mnX,p.x); mnY=Math.min(mnY,p.y); mxX=Math.max(mxX,p.x); mxY=Math.max(mxY,p.y); }
+  return {minX:mnX,minY:mnY,maxX:mxX,maxY:mxY,width:mxX-mnX,height:mxY-mnY,centerX:(mnX+mxX)/2,centerY:(mnY+mxY)/2};
+}
+function distributePointsInPolygon(poly, count, pad=2) {
+  if (!count) return [];
+  const b = getPolygonBounds(poly), pts = [];
+  const cols = Math.ceil(Math.sqrt(count*(b.width/b.height))), rows = Math.ceil(count/cols);
+  const sX = (b.width-pad*2)/(cols+1), sY = (b.height-pad*2)/(rows+1), cands = [];
+  for (let r=1;r<=rows+2;r++) for (let c=1;c<=cols+2;c++) {
+    const cd = {x:b.minX+pad+c*sX, y:b.minY+pad+r*sY};
+    if (isPointInPolygon(cd,poly)) cands.push(cd);
+  }
+  if (cands.length>=count) { const st=cands.length/count; for(let i=0;i<count;i++) pts.push(cands[Math.floor(i*st)]); }
+  else { pts.push(...cands); while(pts.length<count) pts.push({x:b.centerX+(Math.random()-0.5)*4,y:b.centerY+(Math.random()-0.5)*4}); }
+  return pts;
+}
+
+// Positions: { artifactId: {x, y, hallId, hallColor, hallName} }
+let positions = {};
+let originalPositions = {};
+let movedArtifacts = new Set();
+
+function computePositions() {
+  positions = {};
+  for (const h of hallsData) {
+    if (!h.polygon||h.polygon.length<3) continue;
+    const dist = distributePointsInPolygon(h.polygon, h.artifactIds.length, 2);
+    h.artifactIds.forEach((id,i) => { if(dist[i]) positions[id]={...dist[i],hallId:h.id,hallColor:h.color,hallName:h.name}; });
+  }
+  positions['colossal-statue-of-ramesses-ii'] && Object.assign(positions['colossal-statue-of-ramesses-ii'], {x:48,y:88});
+  originalPositions = JSON.parse(JSON.stringify(positions));
+}
+computePositions();
+
+// ============ DRAG LOGIC ============
+let dragTarget = null, dragId = null;
+
+function onDragStart(e, artifactId, circleEl) {
+  e.preventDefault();
+  dragTarget = circleEl;
+  dragId = artifactId;
+  circleEl.classList.add('dragging');
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+}
+function onDragMove(e) {
+  if (!dragTarget) return;
+  const img = document.getElementById('mapImage');
+  const rect = img.getBoundingClientRect();
+  const x = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
+  const y = Math.max(0, Math.min(100, (e.clientY - rect.top) / rect.height * 100));
+  positions[dragId].x = x;
+  positions[dragId].y = y;
+  dragTarget.style.left = x + '%';
+  dragTarget.style.top = y + '%';
+  // Update label
+  const lbl = dragTarget.querySelector('.circle-label');
+  if (lbl) lbl.textContent = `${dragId.replace(/-/g,' ')} (${x.toFixed(1)}, ${y.toFixed(1)})`;
+  document.getElementById('coord-display').textContent = `Dragging: ${x.toFixed(2)}%, ${y.toFixed(2)}%`;
+}
+function onDragEnd() {
+  if (dragTarget) {
+    dragTarget.classList.remove('dragging');
+    dragTarget.classList.add('moved');
+    movedArtifacts.add(dragId);
+    updateChangedCount();
+  }
+  dragTarget = null; dragId = null;
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+}
+
+function updateChangedCount() {
+  const el = document.getElementById('changedCount');
+  el.textContent = movedArtifacts.size ? `${movedArtifacts.size} moved` : '';
+}
+
+// ============ RENDER ============
+function renderCircles() {
+  const container = document.getElementById('circles-container');
+  const size = parseInt(document.getElementById('circleSize').value);
+  const showLabels = document.getElementById('showLabels').checked;
+  container.innerHTML = '';
+
+  for (const [id, pos] of Object.entries(positions)) {
+    const el = document.createElement('div');
+    el.className = 'artifact-circle' + (movedArtifacts.has(id) ? ' moved' : '');
+    el.style.cssText = `width:${size}px;height:${size}px;border-color:${pos.hallColor};background:${pos.hallColor}30;top:${pos.y}%;left:${pos.x}%;`;
+
+    const dot = document.createElement('div');
+    dot.style.cssText = `position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:${pos.hallColor};`;
+    el.appendChild(dot);
+
+    if (showLabels) {
+      const lbl = document.createElement('div');
+      lbl.className = 'circle-label';
+      lbl.textContent = movedArtifacts.has(id)
+        ? `${id.replace(/-/g,' ')} (${pos.x.toFixed(1)}, ${pos.y.toFixed(1)})`
+        : id.replace(/-/g,' ');
+      el.appendChild(lbl);
+    }
+
+    el.addEventListener('mousedown', (e) => onDragStart(e, id, el));
+    container.appendChild(el);
+  }
+}
+
+function renderPolygons() {
+  const svg = document.getElementById('hallPolygonsSvg');
+  svg.innerHTML = '';
+  if (!document.getElementById('showPolygons').checked) return;
+  for (const h of hallsData) {
+    const pts = h.polygon.map(p=>`${p.x},${p.y}`).join(' ');
+    const pg = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    pg.setAttribute('points',pts); pg.setAttribute('fill',h.color+'15');
+    pg.setAttribute('stroke',h.color); pg.setAttribute('stroke-width','0.3'); pg.setAttribute('stroke-dasharray','1,0.5');
+    svg.appendChild(pg);
+    const b = getPolygonBounds(h.polygon);
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',b.centerX); t.setAttribute('y',b.centerY); t.setAttribute('text-anchor','middle');
+    t.setAttribute('dominant-baseline','middle'); t.setAttribute('fill',h.color);
+    t.setAttribute('font-size','2'); t.setAttribute('font-weight','bold'); t.textContent=h.name;
+    svg.appendChild(t);
+  }
+}
+
+function renderLegend() {
+  const el = document.getElementById('legend');
+  let h = '<h4>Hall Legend</h4>';
+  for (const hall of hallsData) h += `<div class="legend-item"><div class="legend-dot" style="border-color:${hall.color};background:${hall.color}30;"></div><span class="legend-text">${hall.name} (${hall.artifactIds.length})</span></div>`;
+  h += `<div style="margin-top:4px;color:#FFD700;font-size:10px;font-weight:bold;">Total: ${Object.keys(positions).length}</div>`;
+  el.innerHTML = h;
+}
+
+function renderAll() { renderCircles(); renderPolygons(); renderLegend(); }
+
+function resetPositions() {
+  positions = JSON.parse(JSON.stringify(originalPositions));
+  movedArtifacts.clear(); updateChangedCount(); renderAll();
+}
+
+// ============ EXPORT ============
+function showExport() {
+  // Build a JS object literal that can be pasted into MuseumMap.tsx
+  let code = '// Paste this inside MuseumMap.tsx artifactPositions useMemo\n';
+  code += '// Only overrides are shown — remove the distributePointsInPolygon logic\n';
+  code += '// and replace with these fixed positions:\n\n';
+  code += 'const artifactPositions = useMemo(() => ({\n';
+  for (const [id, pos] of Object.entries(positions)) {
+    const moved = movedArtifacts.has(id) ? ' // MOVED' : '';
+    code += `  '${id}': { x: ${pos.x.toFixed(2)}, y: ${pos.y.toFixed(2)} },${moved}\n`;
+  }
+  code += '}), []);\n';
+
+  document.getElementById('export-text').value = code;
+  document.getElementById('export-modal').classList.add('show');
+}
+function copyExport() {
+  const ta = document.getElementById('export-text');
+  ta.select(); document.execCommand('copy');
+  alert('Copied to clipboard!');
+}
+function closeExport() { document.getElementById('export-modal').classList.remove('show'); }
+
+// ============ EVENTS ============
+document.getElementById('circleSize').addEventListener('input', (e) => {
+  document.getElementById('circleSizeVal').textContent = e.target.value + 'px'; renderAll();
+});
+document.getElementById('showLabels').addEventListener('change', renderAll);
+document.getElementById('showPolygons').addEventListener('change', renderAll);
+
+document.getElementById('map-wrapper').addEventListener('mousemove', (e) => {
+  if (dragTarget) return; // don't overwrite during drag
+  const img = document.getElementById('mapImage'), rect = img.getBoundingClientRect();
+  const x = ((e.clientX-rect.left)/rect.width*100).toFixed(2);
+  const y = ((e.clientY-rect.top)/rect.height*100).toFixed(2);
+  document.getElementById('coord-display').textContent = `X: ${x}%  Y: ${y}%`;
+});
+
+document.getElementById('mapImage').addEventListener('load', renderAll);
+if (document.getElementById('mapImage').complete) renderAll();
+</script>
+</body>
+</html>

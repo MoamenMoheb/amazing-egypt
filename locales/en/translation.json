@@ -1,0 +1,68 @@
+{
+  "title": "GEMKids",
+  "welcome": "Welcome, young explorer! 🏛️",
+  "welcomeSub": "I'm Amun, your museum guide! Ready to discover the secrets of ancient Egypt?",
+  "enterMuseum": "Enter the Museum! 🚪",
+  "explore": "Let's explore the museum together!",
+  "clickHall": "Click on a hall to explore it!",
+  "back": "Back",
+  "backToMap": "Back to Map",
+  "backToHall": "Back to Hall",
+  "nextArtifact": "Next Artifact →",
+  "takeQuiz": "Take the Quiz! 🧩",
+  "quizTitle": "Quiz Time!",
+  "quizCorrect": "Amazing! You got it right! 🎉",
+  "quizWrong": "Oops! Try again! You can do it! 💪",
+  "badgeEarned": "You earned a badge! 🏅",
+  "yourBadges": "Your Badges",
+  "noBadges": "Explore halls and take quizzes to earn badges!",
+  "funFact": "Fun Fact 💡",
+  "didYouKnow": "Did You Know? 🤔",
+  "listenToStory": "Listen to Story 🔊",
+  "artifactsExplored": "Artifacts Explored",
+  "parentMode": "Parent Mode",
+  "parentModeDesc": "Deeper historical information for parents and teachers.",
+  "score": "Score",
+  "hallComplete": "Hall Complete!",
+  "lockedBadge": "Keep exploring to unlock!",
+  "nav": {
+    "home": "Home",
+    "map": "Museum Map",
+    "badges": "Badges"
+  },
+  "character": {
+    "greeting": "Hi there! I'm Amun! 👋",
+    "hallIntro": "Welcome to {{hall}}! Let me show you around!",
+    "artifactIntro": "Wow, look at this amazing artifact!",
+    "quizPrompt": "You've explored this hall! Ready for a quiz? 🧩",
+    "celebrate": "You're a superstar! ⭐",
+    "encourage": "Great job exploring! Keep going! 🌟"
+  },
+  "halls": {
+    "tutankhamun": {
+      "name": "King Tutankhamun Hall",
+      "description": "Discover the treasures of the boy king! This hall is filled with golden artifacts found in his tomb.",
+      "parentInfo": "The tomb of Tutankhamun (KV62) was discovered by Howard Carter in 1922 in the Valley of the Kings. It contained over 5,000 artifacts, making it one of the most significant archaeological finds in history. The discovery sparked worldwide 'Tutmania' and renewed global interest in Egyptology."
+    },
+    "mummies": {
+      "name": "Royal Mummies Hall",
+      "description": "Meet the ancient pharaohs! See real mummies of the greatest kings and queens of Egypt.",
+      "parentInfo": "The Royal Mummies Hall at GEM features state-of-the-art climate-controlled display cases. The mummification process took 70 days and involved removing organs, treating the body with natron, and wrapping in linen. The hall houses mummies spanning the New Kingdom period (1550–1070 BCE)."
+    },
+    "khufu": {
+      "name": "Grand Staircase & Khufu Gallery",
+      "description": "Walk up the grand staircase and see the amazing Khufu solar boat — a real ancient ship!",
+      "parentInfo": "The Khufu Solar Boat was discovered in 1954 in a sealed pit at the base of the Great Pyramid. At 43.6 meters long, it is one of the oldest and largest preserved ancient vessels. Made from Lebanese cedar wood, it was reassembled from 1,224 pieces over 14 years."
+    },
+    "jewelry": {
+      "name": "Jewelry & Daily Life Hall",
+      "description": "See how ancient Egyptians lived! Beautiful jewelry, games, and everyday objects.",
+      "parentInfo": "Ancient Egyptian jewelry served both decorative and protective purposes. Amulets were believed to provide magical protection. Materials used included gold, silver, lapis lazuli, turquoise, and carnelian. The jewelry-making techniques developed by ancient Egyptians are still studied by modern jewelers."
+    },
+    "gardens": {
+      "name": "Gardens & Obelisk Court",
+      "description": "Explore the beautiful gardens and see the tall obelisk standing in the courtyard!",
+      "parentInfo": "The GEM's gardens and outdoor areas are designed to recreate the experience of ancient Egyptian landscapes. Obelisks (called tekhenu in ancient Egyptian) were originally placed in pairs at temple entrances and represented the sun god Ra. The tallest existing Egyptian obelisk is the Lateran Obelisk in Rome at 32.2 meters."
+    }
+  }
+}
