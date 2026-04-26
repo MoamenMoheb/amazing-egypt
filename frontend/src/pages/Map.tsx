@@ -1,21 +1,26 @@
 import { Link } from 'react-router-dom';
-import { Home, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
+import { getAssetUrl } from '../utils/getAssetUrl';
 import MuseumMap from '../components/MuseumMap';
 
 const Map = () => {
     return (
         <div className="h-screen w-screen bg-[#020C1B] overflow-hidden relative flex flex-col">
             {/* Top Navbar */}
-            <nav className="relative z-50 flex items-center justify-between px-4 py-2 bg-[#0A192F]/80 backdrop-blur-md border-b border-[#FFD700]/15 shrink-0">
+            <nav className="relative z-50 flex items-center justify-between px-4 py-1.5 bg-[#0A192F]/90 backdrop-blur-md border-b border-[#FFD700]/15 shrink-0">
                 <Link
                     to="/"
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] font-bold text-sm hover:bg-[#FFD700]/20 hover:border-[#FFD700]/60 transition-all"
+                    className="flex items-center gap-2 group transition-all"
+                    title="العودة للرئيسية"
                 >
-                    <Home size={16} />
-                    <span>الرئيسية</span>
+                    <img
+                        src={getAssetUrl('/images/logo.png')}
+                        alt="GEM Kids"
+                        className="h-10 w-auto object-contain drop-shadow-[0_0_8px_rgba(255,215,0,0.4)] group-hover:drop-shadow-[0_0_16px_rgba(255,215,0,0.7)] group-hover:scale-105 transition-all duration-300"
+                    />
                 </Link>
 
-                <div className="flex items-center gap-2 text-[#85C1E9] font-bold text-sm">
+                <div className="flex items-center gap-2 text-sm font-bold">
                     <MapPin size={16} className="text-[#FFD700]" />
                     <span className="text-[#FFD700]">خريطة المتحف</span>
                 </div>
