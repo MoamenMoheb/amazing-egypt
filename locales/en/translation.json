@@ -25,6 +25,8 @@
   "score": "Score",
   "hallComplete": "Hall Complete!",
   "lockedBadge": "Keep exploring to unlock!",
+  "completePrevious": "Complete \"{{prevName}}\" to unlock",
+  "description": "Description",
   "nav": {
     "home": "Home",
     "map": "Museum Map",

@@ -25,6 +25,9 @@
   "score": "النقاط",
   "hallComplete": "تم استكشاف القاعة!",
   "lockedBadge": "واصل الاستكشاف للفتح!",
+  "completePrevious": "أكمل \"{{prevName}}\" للفتح",
+  "funFact": "حقيقة ممتعة 💡",
+  "description": "الوصف",
   "nav": {
     "home": "الرئيسية",
     "map": "خريطة المتحف",
