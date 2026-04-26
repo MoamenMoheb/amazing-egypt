@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { useMascot } from '../context/MascotContext';
-import { useTranslation } from 'react-i18next';
 import { getAssetUrl } from '../utils/getAssetUrl';
-
-type CharacterMood = 'idle' | 'welcome' | 'pointing' | 'celebration' | 'confused' | 'thinking' | 'idea' | 'speaking';
 
 const REACTION_IMAGES: Record<string, string> = {
     idle: getAssetUrl('/character/New-Mascot1.png'),
