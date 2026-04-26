@@ -42,7 +42,7 @@ const MuseumMap = () => {
     }, []);
 
 
-    // Scroll the map to center the selected artifact in the map-visible area (left half)
+    // Scroll the map to center the selected artifact in the visible area
     const scrollToArtifact = useCallback((artifact: Artifact) => {
         const container = mapContainerRef.current;
         const inner = mapInnerRef.current;
@@ -57,13 +57,18 @@ const MuseumMap = () => {
         const artifactX = (pos.x / 100) * mapWidth;
         const artifactY = (pos.y / 100) * mapHeight;
 
-        // The visible area for the map is the left half of the viewport (panel is on the right)
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        const mapVisibleWidth = viewportWidth / 2; // left half
+        const mapVisibleWidth = viewportWidth / 2; // half of the viewport
 
-        // Scroll so the artifact is centered in the left half
-        const scrollLeft = artifactX - (mapVisibleWidth / 2);
+        // Determine which side the panel will be on
+        const isPanelOnRight = pos.x < 50;
+
+        // Center the artifact in the appropriate half of the screen
+        const scrollLeft = isPanelOnRight
+            ? artifactX - (mapVisibleWidth / 2) // Panel on right, center artifact in left half
+            : artifactX - (viewportWidth - (mapVisibleWidth / 2)); // Panel on left, center artifact in right half
+            
         const scrollTop = artifactY - (viewportHeight / 2);
 
         container.scrollTo({
@@ -93,6 +98,9 @@ const MuseumMap = () => {
 
     // Get the spotlight position for the dark overlay
     const selectedPos = selectedArtifact ? artifactPositions[selectedArtifact.id] : null;
+
+    // Determine which side the panel should be on
+    const isPanelOnRight = selectedPos ? selectedPos.x < 50 : true;
 
     return (
         <div
@@ -437,15 +445,18 @@ const MuseumMap = () => {
                         {/* Side panel */}
                         <motion.div
                             data-popup
-                            initial={{ x: '100%' }}
+                            initial={{ x: isPanelOnRight ? '100%' : '-100%' }}
                             animate={{ x: 0 }}
-                            exit={{ x: '100%' }}
+                            exit={{ x: isPanelOnRight ? '100%' : '-100%' }}
                             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                            className="fixed top-0 right-0 z-[70] w-[50vw] h-full overflow-y-auto"
+                            className={`fixed top-0 ${isPanelOnRight ? 'right-0' : 'left-0'} z-[70] w-[50vw] h-full overflow-y-auto`}
                             style={{
                                 background: 'linear-gradient(180deg, #0a0e1a 0%, #111827 30%, #0f172a 100%)',
-                                borderLeft: '1px solid rgba(255, 215, 0, 0.2)',
-                                boxShadow: '-10px 0 60px rgba(0,0,0,0.6), -2px 0 20px rgba(255,215,0,0.08)',
+                                borderLeft: isPanelOnRight ? '1px solid rgba(255, 215, 0, 0.2)' : 'none',
+                                borderRight: !isPanelOnRight ? '1px solid rgba(255, 215, 0, 0.2)' : 'none',
+                                boxShadow: isPanelOnRight 
+                                    ? '-10px 0 60px rgba(0,0,0,0.6), -2px 0 20px rgba(255,215,0,0.08)' 
+                                    : '10px 0 60px rgba(0,0,0,0.6), 2px 0 20px rgba(255,215,0,0.08)',
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
