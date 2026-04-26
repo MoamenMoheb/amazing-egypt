@@ -10,7 +10,7 @@ import { getAssetUrl } from '../utils/getAssetUrl';
 
 const MuseumMap = () => {
     const { t, i18n } = useTranslation();
-    const { viewedArtifacts, isHallUnlocked, isHallComplete } = useMuseum();
+    const { viewedArtifacts, isHallUnlocked, isHallComplete, markViewed } = useMuseum();
     const isAr = i18n.language === 'ar';
 
     const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
@@ -280,6 +280,7 @@ const MuseumMap = () => {
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setSelectedArtifact(artifact);
+                                    markViewed(artifact.id);
                                 }}
                                 onMouseEnter={() => setHoveredArtifact(artifact)}
                                 onMouseLeave={() => setHoveredArtifact(null)}
