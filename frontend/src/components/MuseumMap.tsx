@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,7 @@ const MuseumMap = () => {
     const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(null);
     const [hoveredArtifact, setHoveredArtifact] = useState<Artifact | null>(null);
     const mapContainerRef = useRef<HTMLDivElement>(null);
+    const mapInnerRef = useRef<HTMLDivElement>(null);
 
     // Pre-compute artifact positions inside their hall polygons
     const artifactPositions = useMemo(() => {
@@ -42,8 +43,46 @@ const MuseumMap = () => {
         return positions;
     }, []);
 
-    // Which hall is the selected artifact in?
-    const selectedHallId = selectedArtifact?.hallId ?? null;
+
+    // Scroll the map to center the selected artifact in the map-visible area (left half)
+    const scrollToArtifact = useCallback((artifact: Artifact) => {
+        const container = mapContainerRef.current;
+        const inner = mapInnerRef.current;
+        if (!container || !inner) return;
+
+        const pos = artifactPositions[artifact.id];
+        if (!pos) return;
+
+        // The artifact position in pixels on the inner map
+        const mapWidth = inner.scrollWidth;
+        const mapHeight = inner.scrollHeight;
+        const artifactX = (pos.x / 100) * mapWidth;
+        const artifactY = (pos.y / 100) * mapHeight;
+
+        // The visible area for the map is the left half of the viewport (panel is on the right)
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const mapVisibleWidth = viewportWidth / 2; // left half
+
+        // Scroll so the artifact is centered in the left half
+        const scrollLeft = artifactX - (mapVisibleWidth / 2);
+        const scrollTop = artifactY - (viewportHeight / 2);
+
+        container.scrollTo({
+            left: Math.max(0, scrollLeft),
+            top: Math.max(0, scrollTop),
+            behavior: 'smooth',
+        });
+    }, [artifactPositions]);
+
+    // When an artifact is selected, scroll to it
+    useEffect(() => {
+        if (selectedArtifact) {
+            // Small delay to let the panel animate in
+            const timer = setTimeout(() => scrollToArtifact(selectedArtifact), 100);
+            return () => clearTimeout(timer);
+        }
+    }, [selectedArtifact, scrollToArtifact]);
 
     // Close popup when clicking on empty map area
     const handleMapBackgroundClick = (e: React.MouseEvent) => {
@@ -54,6 +93,9 @@ const MuseumMap = () => {
         setSelectedArtifact(null);
     };
 
+    // Get the spotlight position for the dark overlay
+    const selectedPos = selectedArtifact ? artifactPositions[selectedArtifact.id] : null;
+
     return (
         <div
             ref={mapContainerRef}
@@ -61,8 +103,8 @@ const MuseumMap = () => {
             onClick={handleMapBackgroundClick}
             style={{ cursor: selectedArtifact ? 'default' : 'grab' }}
         >
-            {/* ====== MAP INNER: extra-wide so the user scrolls around like MetKids ====== */}
-            <div className="relative inline-block" style={{ minWidth: '2200px' }}>
+            {/* ====== MAP INNER: extra-wide so the user scrolls around ====== */}
+            <div ref={mapInnerRef} className="relative inline-block" style={{ minWidth: '2200px' }}>
                 {/* Map Image */}
                 <img
                     src={getAssetUrl('/images/museum_map.png')}
@@ -89,6 +131,16 @@ const MuseumMap = () => {
                             <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" />
                             <feGaussianBlur stdDeviation="0.5" />
                         </filter>
+                        {/* Spotlight radial gradient for selected artifact */}
+                        {selectedPos && (
+                            <radialGradient id="spotlight-grad" cx={`${selectedPos.x}%`} cy={`${selectedPos.y}%`} r="12%" gradientUnits="userSpaceOnUse"
+                                fx={`${selectedPos.x}%`} fy={`${selectedPos.y}%`}
+                            >
+                                <stop offset="0%" stopColor="black" stopOpacity="0" />
+                                <stop offset="60%" stopColor="black" stopOpacity="0.1" />
+                                <stop offset="100%" stopColor="black" stopOpacity="0.75" />
+                            </radialGradient>
+                        )}
                     </defs>
 
                     {/* Fog overlays for LOCKED halls */}
@@ -120,30 +172,14 @@ const MuseumMap = () => {
                         );
                     })}
 
-                    {/* Hall outlines removed — no visible boundaries */}
-
-                    {/* ====== SPOTLIGHT FADE: darken all halls except the selected one ====== */}
-                    {selectedArtifact && hallsData.map((hall) => {
-                        if (!isHallUnlocked(hall.id)) return null;
-                        if (hall.id === selectedHallId) return null; // don't darken the active hall
-                        if (!hall.polygon || hall.polygon.length < 3) return null;
-
-                        const points = hall.polygon
-                            .map(p => `${p.x},${p.y}`)
-                            .join(' ');
-
-                        return (
-                            <polygon
-                                key={`fade-${hall.id}`}
-                                points={points}
-                                fill="rgba(0, 0, 0, 0.55)"
-                                style={{
-                                    transition: 'fill 0.5s ease',
-                                    pointerEvents: 'none',
-                                }}
-                            />
-                        );
-                    })}
+                    {/* ====== FULL-MAP DARK OVERLAY with spotlight cutout ====== */}
+                    {selectedArtifact && selectedPos && (
+                        <rect
+                            x="0" y="0" width="100" height="100"
+                            fill="url(#spotlight-grad)"
+                            style={{ transition: 'opacity 0.4s ease' }}
+                        />
+                    )}
                 </svg>
 
                 {/* ====== FULL-MAP DARK OVERLAY when an artifact is selected ====== */}
@@ -156,7 +192,9 @@ const MuseumMap = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute inset-0 pointer-events-none"
                             style={{
-                                background: 'radial-gradient(circle at 50% 50%, transparent 20%, rgba(0,0,0,0.45) 60%)',
+                                background: selectedPos
+                                    ? `radial-gradient(circle at ${selectedPos.x}% ${selectedPos.y}%, transparent 3%, rgba(0,0,0,0.7) 15%)`
+                                    : 'rgba(0,0,0,0.7)',
                                 zIndex: 8,
                             }}
                         />
@@ -251,8 +289,8 @@ const MuseumMap = () => {
                                 <div
                                     className="diamond-pin"
                                     style={{
-                                        width: isSelected ? '18px' : '14px',
-                                        height: isSelected ? '18px' : '14px',
+                                        width: isSelected ? '22px' : '14px',
+                                        height: isSelected ? '22px' : '14px',
                                         backgroundColor: diamondColor,
                                         transform: 'rotate(45deg)',
                                         borderRadius: '3px',
@@ -281,6 +319,23 @@ const MuseumMap = () => {
                                     >
                                         ✓
                                     </div>
+                                )}
+
+                                {/* Pulsing ring for selected artifact */}
+                                {isSelected && (
+                                    <div
+                                        className="absolute"
+                                        style={{
+                                            top: '50%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            border: '2px solid rgba(255,215,0,0.5)',
+                                            animation: 'ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite',
+                                        }}
+                                    />
                                 )}
 
                                 {/* ====== HOVER POPUP: small artifact image thumbnail ====== */}
@@ -367,105 +422,107 @@ const MuseumMap = () => {
                 })}
             </div>
 
-            {/* ====== FIXED POPUP OVERLAY — zoomed artifact detail ====== */}
+            {/* ====== SIDE PANEL — slides in from the right, takes half the page ====== */}
             <AnimatePresence>
                 {selectedArtifact && (
                     <>
-                        {/* Backdrop */}
+                        {/* Clickable backdrop on the map side to close */}
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/50 backdrop-blur-[3px] z-[60]"
+                            className="fixed inset-0 z-[60]"
                             onClick={() => setSelectedArtifact(null)}
+                            style={{ background: 'transparent' }}
                         />
 
-                        {/* Popup card */}
+                        {/* Side panel */}
                         <motion.div
                             data-popup
-                            initial={{ opacity: 0, scale: 0.85 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.85 }}
-                            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-                            className="fixed z-[70] w-[92vw] max-w-[440px] max-h-[88vh] overflow-y-auto rounded-3xl shadow-2xl"
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                            className="fixed top-0 right-0 z-[70] w-[50vw] h-full overflow-y-auto"
                             style={{
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                margin: 'auto',
-                                height: 'fit-content',
-                                background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%)',
-                                border: '1px solid rgba(255, 215, 0, 0.25)',
-                                boxShadow: '0 0 60px rgba(255,215,0,0.12), 0 25px 50px rgba(0,0,0,0.5)',
+                                background: 'linear-gradient(180deg, #0a0e1a 0%, #111827 30%, #0f172a 100%)',
+                                borderLeft: '1px solid rgba(255, 215, 0, 0.2)',
+                                boxShadow: '-10px 0 60px rgba(0,0,0,0.6), -2px 0 20px rgba(255,215,0,0.08)',
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* Hero Image — zoomed in */}
-                            <div className="relative h-64 sm:h-72 overflow-hidden">
+                            {/* Hero Image */}
+                            <div className="relative h-[40vh] overflow-hidden">
                                 <motion.img
                                     src={getAssetUrl(selectedArtifact.image)}
                                     alt={isAr ? selectedArtifact.nameAr : selectedArtifact.name}
                                     className="w-full h-full object-cover"
-                                    initial={{ scale: 1.3 }}
+                                    initial={{ scale: 1.2 }}
                                     animate={{ scale: 1 }}
-                                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                                    transition={{ duration: 1, ease: 'easeOut' }}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a2e] via-[#1a1a2e]/30 to-transparent" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0e1a] via-[#0a0e1a]/40 to-transparent" />
+
+                                {/* Close button */}
                                 <button
                                     onClick={() => setSelectedArtifact(null)}
-                                    className="absolute top-4 right-4 w-9 h-9 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/80 hover:scale-110 transition-all z-20 border border-white/10"
+                                    className="absolute top-5 right-5 w-10 h-10 bg-black/60 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/80 hover:scale-110 transition-all z-20 border border-white/15"
                                 >
-                                    <X size={16} />
+                                    <X size={18} />
                                 </button>
 
-                                <div className="absolute bottom-4 left-5 right-5 text-white">
-                                    <div className="text-xs font-bold text-amber-400 mb-1 tracking-wider uppercase drop-shadow-md">
+                                {/* Title overlay */}
+                                <div className="absolute bottom-6 left-6 right-6 text-white">
+                                    <div className="text-xs font-bold text-amber-400 mb-2 tracking-wider uppercase drop-shadow-md flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
                                         {isAr ? hallsData.find(h => h.id === selectedArtifact.hallId)?.nameAr : hallsData.find(h => h.id === selectedArtifact.hallId)?.name}
                                     </div>
-                                    <h3 className="text-2xl font-bold leading-tight drop-shadow-lg">
+                                    <h3 className="text-3xl font-bold leading-tight drop-shadow-lg">
                                         {isAr ? selectedArtifact.nameAr : selectedArtifact.name}
                                     </h3>
                                 </div>
                             </div>
 
                             {/* Info Content */}
-                            <div className="p-5 sm:p-6">
-                                <div className="rounded-2xl p-4 mb-5 border border-amber-500/20" style={{ background: 'rgba(255, 215, 0, 0.06)' }}>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Lightbulb className="text-amber-400" size={16} />
-                                        <p className="text-amber-400 font-bold text-xs uppercase tracking-wider">
+                            <div className="p-6 lg:p-8 space-y-6">
+                                {/* Fun Fact Card */}
+                                <div className="rounded-2xl p-5 border border-amber-500/20" style={{ background: 'rgba(255, 215, 0, 0.04)' }}>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Lightbulb className="text-amber-400" size={18} />
+                                        <p className="text-amber-400 font-bold text-sm uppercase tracking-wider">
                                             {t('funFact', 'Fun Fact')}
                                         </p>
                                     </div>
-                                    <p className="text-gray-200 font-medium text-sm leading-relaxed">
+                                    <p className="text-gray-200 font-medium text-base leading-relaxed">
                                         {isAr ? selectedArtifact.funFactAr : selectedArtifact.funFact}
                                     </p>
                                 </div>
 
-                                <div className="mb-6">
-                                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                                {/* Description */}
+                                <div>
+                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">
                                         {t('description', 'Description')}
                                     </h4>
-                                    <p className="text-sm text-gray-300 leading-relaxed font-medium">
+                                    <p className="text-base text-gray-300 leading-relaxed font-medium">
                                         {isAr ? selectedArtifact.descriptionAr : selectedArtifact.description}
                                     </p>
                                 </div>
 
-                                <div className="flex flex-col gap-3">
+                                {/* Action Buttons */}
+                                <div className="flex flex-col gap-3 pt-2">
                                     <motion.button
                                         onClick={() => navigate(`/artifact/${selectedArtifact.id}`)}
-                                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 transition shadow-lg shadow-amber-600/30"
+                                        className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold hover:from-amber-700 hover:to-amber-600 transition shadow-lg shadow-amber-600/30"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
                                         <Eye size={18} />
-                                        <span>{t('exploreMore', 'View Details')}</span>
+                                        <span>{t('exploreMore', 'View Full Details')}</span>
                                     </motion.button>
 
                                     <motion.button
                                         onClick={() => navigate(`/hall/${selectedArtifact.hallId}`)}
-                                        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white/5 text-gray-200 font-bold hover:bg-white/10 border border-white/10 transition"
+                                        className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-white/5 text-gray-200 font-bold hover:bg-white/10 border border-white/10 transition"
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
@@ -478,6 +535,14 @@ const MuseumMap = () => {
                     </>
                 )}
             </AnimatePresence>
+
+            {/* Pulse animation keyframes */}
+            <style>{`
+                @keyframes ping {
+                    0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+                    75%, 100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
+                }
+            `}</style>
         </div>
     );
 };

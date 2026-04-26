@@ -102,7 +102,7 @@ export const MuseumProvider = ({ children }: { children: ReactNode }) => {
         return hall.artifactIds.every(id => viewedArtifacts.includes(id));
     }, [viewedArtifacts]);
 
-    // Auto-unlock: when all artifacts in a hall are viewed, unlock the next hall
+    // Auto-unlock: when all artifacts in a hall are viewed, unlock the next hall AND earn the badge
     useEffect(() => {
         const sortedHalls = [...hallsData].sort((a, b) => a.unlockOrder - b.unlockOrder);
 
@@ -113,13 +113,19 @@ export const MuseumProvider = ({ children }: { children: ReactNode }) => {
             const allViewed = hall.artifactIds.every(id => viewedArtifacts.includes(id));
             if (!allViewed) continue;
 
+            // Auto-earn badge for this hall
+            if (!badges.includes(hall.badge.id)) {
+                earnBadge(hall.badge.id);
+                addScore(100);
+            }
+
             // Find the next hall in the unlock chain
             const nextHall = sortedHalls.find(h => h.unlockOrder === hall.unlockOrder + 1);
             if (nextHall && !unlockedHalls.includes(nextHall.id)) {
                 unlockHall(nextHall.id);
             }
         }
-    }, [viewedArtifacts, unlockedHalls, unlockHall]);
+    }, [viewedArtifacts, unlockedHalls, badges, unlockHall, earnBadge, addScore]);
 
     return (
         <MuseumContext.Provider value={{
