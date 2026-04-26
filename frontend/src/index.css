@@ -109,4 +109,21 @@ body {
 
 .fog-pulse {
   animation: fog-pulse-anim 3s ease-in-out infinite;
+}
+
+/* ===== Diamond Pin Styles ===== */
+@keyframes diamond-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(231,76,60,0.5); }
+  50% { box-shadow: 0 0 16px rgba(231,76,60,0.9), 0 0 24px rgba(231,76,60,0.3); }
+}
+
+.diamond-pin {
+  animation: diamond-pulse 2.5s ease-in-out infinite;
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+}
+
+.diamond-pin:hover {
+  transform: rotate(45deg) scale(1.5) !important;
+  box-shadow: 0 0 20px rgba(255,215,0,0.8), 0 0 40px rgba(255,215,0,0.3) !important;
+  background-color: #FFD700 !important;
 }
